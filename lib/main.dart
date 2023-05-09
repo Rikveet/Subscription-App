@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/screens/home.dart';
-import 'package:radha_swami_management_system/screens/register_attendee.dart';
 import 'package:radha_swami_management_system/widgets/nav_bar.dart';
 import 'package:sidebarx/sidebarx.dart';
 
@@ -69,16 +68,12 @@ class MyApp extends StatelessWidget {
                       case 0:
                         return const Home();
                       case 1:
-                        return Container(); // search
-                      case 2:
-                        return const RegisterAttendeeForm();
-                      case 3:
                         return Container(); // Reminders
-                      case 4:
+                      case 2:
                         return Container(); // Settings
-                      case 5:
+                      case 3:
                         return Container(); // Authorize Accounts
-                      case 6:
+                      case 4:
                         return Container(); //Settings
                       default:
                         return Container(); // How did you end up here?

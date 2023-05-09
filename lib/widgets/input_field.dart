@@ -17,8 +17,8 @@ class InputField extends StatelessWidget {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(
           // border styling
-          enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+          enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blueGrey)),
+          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
           errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.red)),
           fillColor: const Color(0xFFEEEEEE),
           filled: true,
