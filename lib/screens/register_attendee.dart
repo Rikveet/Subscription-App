@@ -32,7 +32,7 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
 
   bool fieldsEmpty = true;
 
-  void reset(){
+  void reset() {
     formKey = GlobalKey<FormBuilderState>();
   }
 
@@ -61,7 +61,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                       fields['Phone Number']?.value == null &&
                       fields['City']?.value == null;
                 });
-
               }
             },
             child: Column(
@@ -127,7 +126,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                         ? null
                         : () {
                             if (formKey.currentState!.validate()) {
-
                               Map<dynamic, String> payload = {
                                 'firstName': formKey.currentState?.fields['First Name']!.value as String,
                                 'lastName': formKey.currentState?.fields['Last Name']!.value as String,
