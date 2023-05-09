@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   supabase_flutter: ^1.8.1
   flutter_form_builder: ^8.0.0
+  sidebarx: ^0.15.0
 
 dev_dependencies:
   flutter_test:

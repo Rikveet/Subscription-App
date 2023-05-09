@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:radha_swami_management_system/screens/home.dart';
 import 'package:radha_swami_management_system/screens/register_attendee.dart';
+import 'package:radha_swami_management_system/widgets/nav_bar.dart';
 // import 'package:radha_swami_management_system/constants.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -19,15 +21,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Radha Swami Registration',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Text'),
-        ),
-        body: const RegisterAttendeeForm(),
+      home: const Scaffold(
+        appBar: NavBar(),
+        body: Home(),
       ),
     );
   }
