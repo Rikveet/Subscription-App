@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:radha_swami_management_system/widgets/input_field.dart';
 import 'package:radha_swami_management_system/widgets/input_row.dart';
 
@@ -12,35 +13,28 @@ class RegisterAttendeeForm extends StatefulWidget {
 }
 
 class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
-  final formKey = GlobalKey<FormState>();
+  GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
 
   static const title = Text(
     'Register',
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
   );
 
-  static const gapH = SizedBox(
-    // standard gap between rows
-    height: 15,
-  );
+  static const gapH = SizedBox(height: 15); // standard gap between rows
 
   static ButtonStyle buttonStyle = ButtonStyle(
-      // styling for menu buttons
-      shape: MaterialStateProperty.all(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      ),
-      textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18)),
-      backgroundColor: MaterialStateProperty.all(Colors.blue),
-      fixedSize: MaterialStateProperty.all(const Size(150, 50)));
-
-  // field value controllers to retrive latest value
-  TextEditingController firstNameC = TextEditingController();
-  TextEditingController lastNameC = TextEditingController();
-  TextEditingController emailC = TextEditingController();
-  TextEditingController phoneNumberC = TextEditingController();
-  TextEditingController cityC = TextEditingController();
+    // styling for menu buttons
+    shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0))),
+    textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18)),
+    backgroundColor: MaterialStateProperty.all(Colors.blue),
+    fixedSize: MaterialStateProperty.all(const Size(150, 50)),
+  );
 
   bool fieldsEmpty = true;
+
+  void reset(){
+    formKey = GlobalKey<FormBuilderState>();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,18 +44,24 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
           alignment: Alignment.center,
           constraints: const BoxConstraints(maxWidth: 400),
           height: MediaQuery.of(context).size.height,
-          child: Form(
+          child: FormBuilder(
             key: formKey,
             onChanged: () {
+              debugPrint('changed');
               if (fieldsEmpty) {
                 setState(() {
                   // check if all fields are empty
-                  fieldsEmpty = firstNameC.text.isEmpty &&
-                      lastNameC.text.isEmpty &&
-                      emailC.text.isEmpty &&
-                      phoneNumberC.text.isEmpty &&
-                      cityC.text.isEmpty;
+                  final fields = formKey.currentState?.fields;
+                  if (fields == null) {
+                    fieldsEmpty = true;
+                  }
+                  fieldsEmpty = fields!['First Name']?.value == null &&
+                      fields['Last Name']?.value == null &&
+                      fields['Email']?.value == null &&
+                      fields['Phone Number']?.value == null &&
+                      fields['City']?.value == null;
                 });
+
               }
             },
             child: Column(
@@ -72,8 +72,8 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 InputRow(
                   children: [
                     InputField(
-                      controller: firstNameC,
                       labelText: 'First Name',
+                      autoFocus: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return "Required*";
@@ -82,7 +82,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                       },
                     ),
                     InputField(
-                      controller: lastNameC,
                       labelText: 'Last Name',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -96,7 +95,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 gapH,
                 InputRow(children: [
                   InputField(
-                    controller: emailC,
                     labelText: 'Email',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -106,7 +104,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                     },
                   ),
                   InputField(
-                    controller: phoneNumberC,
                     labelText: 'Phone Number',
                     validator: (value) {
                       return null;
@@ -115,7 +112,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 ]),
                 gapH,
                 InputField(
-                  controller: cityC,
                   labelText: 'City',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -127,23 +123,30 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 gapH,
                 Row(children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        Map<dynamic, String> payload = {
-                          'firstName': firstNameC.text,
-                          'lastName': lastNameC.text,
-                          'email': emailC.text,
-                          'city': cityC.text
-                        };
-                        if (phoneNumberC.text.isNotEmpty) {
-                          payload['phoneNumber'] = phoneNumberC.text;
-                        }
-                        debugPrint('${payload}');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Processing Data')),
-                        );
-                      }
-                    },
+                    onPressed: fieldsEmpty
+                        ? null
+                        : () {
+                            if (formKey.currentState!.validate()) {
+
+                              Map<dynamic, String> payload = {
+                                'firstName': formKey.currentState?.fields['First Name']!.value as String,
+                                'lastName': formKey.currentState?.fields['Last Name']!.value as String,
+                                'email': formKey.currentState?.fields['Email']!.value as String,
+                                'city': formKey.currentState?.fields['City']!.value as String
+                              };
+                              if (formKey.currentState?.fields['Phone Number']!.value != null) {
+                                payload['phoneNumber'] = formKey.currentState?.fields['Phone Number']!.value as String;
+                              }
+                              debugPrint(payload.toString());
+                              setState(() {
+                                fieldsEmpty = true;
+                              });
+                              reset();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Processing Data')),
+                              );
+                            }
+                          },
                     style: buttonStyle,
                     icon: const Icon(Icons.person),
                     label: const Text('Register'),
@@ -155,15 +158,10 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                     onPressed: fieldsEmpty
                         ? null
                         : () {
-                            formKey.currentState?.reset();
                             setState(() {
-                              firstNameC.text = '';
-                              lastNameC.text = '';
-                              emailC.text = '';
-                              phoneNumberC.text = '';
-                              cityC.text = '';
                               fieldsEmpty = true;
                             });
+                            reset();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Cleared')),
                             );
