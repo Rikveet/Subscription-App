@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:sidebarx/sidebarx.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/screens/home.dart';
 import 'package:radha_swami_management_system/widgets/nav_bar.dart';
-import 'package:sidebarx/sidebarx.dart';
-
-// import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
-  // await Supabase.initialize( // initialize supabase
-  //   url: Constants.SUPABASE_URL,
-  //   anonKey: Constants.SUPABASE_KEY,
-  // );
+  await dotenv.load(fileName: '.env');
+
+  await Supabase.initialize(
+    // initialize supabase
+    url: Constants.supabaseUrl,
+    anonKey: Constants.supabaseKey,
+  );
 
   runApp(MyApp()); // launch app
 }
@@ -24,6 +27,7 @@ class MyApp extends StatelessWidget {
   // root
   @override
   Widget build(BuildContext context) {
+    debugPrint('Setting initial');
     return MaterialApp(
       title: 'Radha Swami',
       debugShowCheckedModeBanner: false,
@@ -66,7 +70,7 @@ class MyApp extends StatelessWidget {
                     // final theme = Theme.of(context);
                     switch (_controller.selectedIndex) {
                       case 0:
-                        return const Home();
+                        return Home();
                       case 1:
                         return Container(); // Reminders
                       case 2:

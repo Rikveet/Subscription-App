@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:radha_swami_management_system/models/attendees.dart';
 import 'package:radha_swami_management_system/widgets/input_field.dart';
 import 'package:radha_swami_management_system/widgets/input_row.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterAttendeeForm extends StatefulWidget {
   const RegisterAttendeeForm({super.key});
@@ -26,9 +28,25 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
   );
 
   bool fieldsEmpty = true;
+  bool submitting = false;
 
   void reset() {
     formKey = GlobalKey<FormBuilderState>();
+    setState(() {
+      fieldsEmpty = true;
+      submitting = false;
+    });
+  }
+
+  Future<void> submit(Attendee attendee) async {
+    await Supabase.instance.client.from('attendee').insert({
+      'firstName': attendee.firstName,
+      'lastName': attendee.lastName,
+      'email': attendee.email,
+      //'phoneNumber': 1234, //attendee.phoneNumber ?? ''
+      'city': attendee.city
+    });
+    reset();
   }
 
   @override
@@ -112,32 +130,30 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
             gapH,
             Row(children: [
               ElevatedButton.icon(
-                onPressed: fieldsEmpty
+                onPressed: fieldsEmpty || submitting
                     ? null
-                    : () {
+                    : () async {
                         if (formKey.currentState!.validate()) {
-                          Map<dynamic, String> payload = {
-                            'firstName': formKey.currentState?.fields['First Name']!.value as String,
-                            'lastName': formKey.currentState?.fields['Last Name']!.value as String,
-                            'email': formKey.currentState?.fields['Email']!.value as String,
-                            'city': formKey.currentState?.fields['City']!.value as String
-                          };
-                          if (formKey.currentState?.fields['Phone Number']!.value != null) {
-                            payload['phoneNumber'] = formKey.currentState?.fields['Phone Number']!.value as String;
-                          }
-                          debugPrint(payload.toString());
+                          final fields = formKey.currentState!.fields;
+                          submit(
+                            Attendee(
+                                firstName: fields['First Name']!.value as String,
+                                lastName: fields['Last Name']!.value as String,
+                                email: fields['Email']!.value as String,
+                                phoneNumber: (fields['Phone Number']!.value ?? '') as String,
+                                city: fields['City']!.value as String),
+                          );
                           setState(() {
-                            fieldsEmpty = true;
+                            submitting = true;
                           });
-                          reset();
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Processing Data')),
                           );
                         }
                       },
                 style: buttonStyle,
-                icon: const Icon(Icons.person),
-                label: const Text('Register'),
+                icon: submitting ? const Icon(Icons.sync) : const Icon(Icons.person),
+                label: submitting ? const Text('Uploading') : const Text('Register'),
               ),
               const SizedBox(
                 width: 10,
@@ -146,9 +162,6 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 onPressed: fieldsEmpty
                     ? null
                     : () {
-                        setState(() {
-                          fieldsEmpty = true;
-                        });
                         reset();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Cleared')),

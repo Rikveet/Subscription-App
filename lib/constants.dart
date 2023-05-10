@@ -1,10 +1,11 @@
 // This class holds constant values for the application
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 abstract class Constants {
-  // Loading supabase credentials from environment
-  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const String supabaseKey = String.fromEnvironment('SUPABASE_KEY');
+
+  static final String supabaseUrl = dotenv.env['SUPABASE_URL'] as String;
+  static final String supabaseKey = dotenv.env['SUPABASE_KEY'] as String;
   static const primaryColor = Color(0xFF2A0C4E);
   static const canvasColor = Color(0xFF2A0C4E);
   static const scaffoldBackgroundColor = Color(0xFFFFF8F0);
