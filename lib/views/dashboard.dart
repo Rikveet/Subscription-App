@@ -1,0 +1,66 @@
+import 'package:flutter/material.dart';
+import 'package:radha_swami_management_system/views/dashboard_views/attendee_list_display.dart';
+import 'package:sidebarx/sidebarx.dart';
+import 'package:radha_swami_management_system/constants.dart';
+import 'package:radha_swami_management_system/widgets/nav.dart';
+
+class Dashboard extends StatefulWidget {
+  const Dashboard({super.key});
+
+  @override
+  DashboardState createState() {
+    return DashboardState();
+  }
+}
+
+class DashboardState extends State<Dashboard> {
+  final dashboardController = SidebarXController(selectedIndex: 0, extended: true);
+  final key = GlobalKey<ScaffoldState>();
+
+  // TODO: try and implement a detection system to detect if user logged out
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      final isSmallScreen = MediaQuery.of(context).size.width < 600;
+      return Scaffold(
+        key: key,
+        appBar: isSmallScreen
+            ? AppBar(
+                backgroundColor: CANVAS_COLOR,
+                title: Text(getTitleByIndex(dashboardController.selectedIndex)),
+                leading: IconButton(
+                  onPressed: () {
+                    key.currentState?.openDrawer();
+                  },
+                  icon: const Icon(Icons.menu),
+                ),
+              )
+            : null,
+        drawer: Nav(controller: dashboardController),
+        body: Row(children: [
+          if (!isSmallScreen) Nav(controller: dashboardController),
+          Expanded(
+            child: Center(
+              child: AnimatedBuilder(
+                animation: dashboardController,
+                builder: (context, child) {
+                  switch (dashboardController.selectedIndex) {
+                    case 1:
+                      return Container(); // Reminders
+                    case 2:
+                      return Container(); // Settings
+                    case 3:
+                      return Container(); // Authorize Accounts
+                    default: // case 0 and any other case that only uses onTap functionality
+                      return AttendeeListTable();
+                  }
+                },
+              ),
+            ),
+          ),
+        ]),
+      );
+    });
+  }
+}

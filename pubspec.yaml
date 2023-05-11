@@ -41,6 +41,7 @@ dependencies:
   flutter_redux: ^0.10.0
   redux: ^5.0.0
   flutter_dotenv: ^5.0.2
+  lottie: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -67,7 +68,16 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
-    - assets/images/avatar.png
+    - assets/images/
+    - assets/animations/login.json
+    - assets/animations/login_success.json
+    - assets/animations/invalid_credentials.json
+    - assets/animations/register.json
+    - assets/animations/auth_loading.json
+    - assets/animations/loading_circular.json
+    - assets/animations/loading_plane.json
+    - assets/animations/loading_searching.json
+    - assets/animations/loading_cloud_data.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -1,31 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/models/attendees.dart';
-import 'package:radha_swami_management_system/widgets/input_field.dart';
-import 'package:radha_swami_management_system/widgets/input_row.dart';
+import 'package:radha_swami_management_system/widgets/form/core/input_field.dart';
+import 'package:radha_swami_management_system/widgets/form/core/input_row.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class RegisterAttendeeForm extends StatefulWidget {
-  const RegisterAttendeeForm({super.key});
+class AddAttendeeForm extends StatefulWidget {
+  const AddAttendeeForm({super.key});
 
   @override
-  RegisterAttendeeFormState createState() {
-    return RegisterAttendeeFormState();
+  AddAttendeeFormState createState() {
+    return AddAttendeeFormState();
   }
 }
 
-class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
+class AddAttendeeFormState extends State<AddAttendeeForm> {
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
-
-  static const gapH = SizedBox(height: 15); // standard gap between rows
-
-  static ButtonStyle buttonStyle = ButtonStyle(
-    // styling for menu buttons
-    shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0))),
-    textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18)),
-    backgroundColor: MaterialStateProperty.all(Colors.blue),
-    fixedSize: MaterialStateProperty.all(const Size(150, 50)),
-  );
 
   bool fieldsEmpty = true;
   bool submitting = false;
@@ -56,15 +47,15 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
       content: FormBuilder(
         key: formKey,
         onChanged: () {
-          debugPrint('changed');
           if (fieldsEmpty) {
             setState(() {
               // check if all fields are empty
               final fields = formKey.currentState?.fields;
               if (fields == null) {
                 fieldsEmpty = true;
+                return;
               }
-              fieldsEmpty = fields!['First Name']?.value == null &&
+              fieldsEmpty = fields['First Name']?.value == null &&
                   fields['Last Name']?.value == null &&
                   fields['Email']?.value == null &&
                   fields['Phone Number']?.value == null &&
@@ -99,7 +90,7 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 ),
               ],
             ),
-            gapH,
+            FORM_VERTICAL_GAP,
             InputRow(children: [
               InputField(
                 labelText: 'Email',
@@ -117,7 +108,7 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 },
               ),
             ]),
-            gapH,
+            FORM_VERTICAL_GAP,
             InputField(
               labelText: 'City',
               validator: (value) {
@@ -127,7 +118,7 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                 return null;
               },
             ),
-            gapH,
+            FORM_VERTICAL_GAP,
             Row(children: [
               ElevatedButton.icon(
                 onPressed: fieldsEmpty || submitting
@@ -151,7 +142,7 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                           );
                         }
                       },
-                style: buttonStyle,
+                style: FORM_BUTTON_STYLE,
                 icon: submitting ? const Icon(Icons.sync) : const Icon(Icons.person),
                 label: submitting ? const Text('Uploading') : const Text('Register'),
               ),
@@ -167,7 +158,7 @@ class RegisterAttendeeFormState extends State<RegisterAttendeeForm> {
                           const SnackBar(content: Text('Cleared')),
                         );
                       },
-                style: buttonStyle,
+                style: FORM_BUTTON_STYLE,
                 icon: const Icon(Icons.clear),
                 label: const Text('Clear All'),
               ),

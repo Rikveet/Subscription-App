@@ -1,40 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:sidebarx/sidebarx.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:radha_swami_management_system/constants.dart';
-import 'package:radha_swami_management_system/screens/home.dart';
-import 'package:radha_swami_management_system/widgets/nav_bar.dart';
+import 'package:radha_swami_management_system/views/login.dart';
+import 'package:radha_swami_management_system/views/register.dart';
+import 'package:radha_swami_management_system/views/spalsh_page.dart';
+import 'package:radha_swami_management_system/views/dashboard.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
 
   await Supabase.initialize(
     // initialize supabase
-    url: Constants.supabaseUrl,
-    anonKey: Constants.supabaseKey,
+    url: SUPABASE_URL,
+    anonKey: SUPABASE_KEY,
   );
 
-  runApp(MyApp()); // launch app
+  runApp(const App()); // launch app
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
-
-  final _controller = SidebarXController(selectedIndex: 0, extended: true);
-  final _key = GlobalKey<ScaffoldState>();
+class App extends StatelessWidget {
+  const App({super.key});
 
   // root
   @override
   Widget build(BuildContext context) {
-    debugPrint('Setting initial');
     return MaterialApp(
       title: 'Radha Swami',
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {'/login': (context) => const Login(), '/register': (context) => const Register(), '/home': (context) => Dashboard()},
       theme: ThemeData(
-        primaryColor: Constants.primaryColor,
-        canvasColor: Constants.canvasColor,
-        scaffoldBackgroundColor: Constants.scaffoldBackgroundColor,
+        primaryColor: PRIMARY_COLOR,
+        canvasColor: CANVAS_COLOR,
+        scaffoldBackgroundColor: SCAFFOLD_BACKGROUND_COLOR,
         textTheme: const TextTheme(
           headlineSmall: TextStyle(
             color: Colors.white,
@@ -43,52 +42,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: Builder(builder: (context) {
-        final isSmallScreen = MediaQuery.of(context).size.width < 600;
-        return Scaffold(
-          key: _key,
-          appBar: isSmallScreen
-              ? AppBar(
-                  backgroundColor: Constants.canvasColor,
-                  title: Text(Constants.getTitleByIndex(_controller.selectedIndex)),
-                  leading: IconButton(
-                    onPressed: () {
-                      _key.currentState?.openDrawer();
-                    },
-                    icon: const Icon(Icons.menu),
-                  ),
-                )
-              : null,
-          drawer: NavBar(controller: _controller),
-          body: Row(children: [
-            if (!isSmallScreen) NavBar(controller: _controller),
-            Expanded(
-              child: Center(
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    // final theme = Theme.of(context);
-                    switch (_controller.selectedIndex) {
-                      case 0:
-                        return Home();
-                      case 1:
-                        return Container(); // Reminders
-                      case 2:
-                        return Container(); // Settings
-                      case 3:
-                        return Container(); // Authorize Accounts
-                      case 4:
-                        return Container(); //Settings
-                      default:
-                        return Container(); // How did you end up here?
-                    }
-                  },
-                ),
-              ),
-            ),
-          ]),
-        );
-      }),
+      home: const SplashPage(),
     );
   }
 }

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:radha_swami_management_system/constants.dart';
-
-import 'package:radha_swami_management_system/screens/register_attendee.dart';
+import 'package:radha_swami_management_system/widgets/form/add_attendee.dart';
 import 'package:radha_swami_management_system/widgets/attendee_list_display.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class Home extends StatelessWidget {
+class AttendeeListTable extends StatelessWidget {
   final Stream<List<Map<String, dynamic>>> attendeeStream = Supabase.instance.client.from('attendee').stream(primaryKey: ['id']);
 
-  Home({super.key});
+  AttendeeListTable({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +17,7 @@ class Home extends StatelessWidget {
             stream: attendeeStream,
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return Loading(300, 300, 'loading_cloud_data');
               }
               final attendeeList = snapshot.data!;
               return ListView(
@@ -45,12 +42,12 @@ class Home extends StatelessWidget {
           right: 10,
           bottom: 10,
           child: FloatingActionButton(
-            backgroundColor: Constants.primaryColor,
+            backgroundColor: PRIMARY_COLOR,
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (context) {
-                  return const RegisterAttendeeForm();
+                  return const AddAttendeeForm();
                 },
               );
             },
@@ -60,4 +57,5 @@ class Home extends StatelessWidget {
       ],
     ));
   }
+
 }

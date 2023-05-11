@@ -2,41 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:radha_swami_management_system/constants.dart';
 
-class NavBar extends StatelessWidget {
-  const NavBar({
-    Key? key,
-    required SidebarXController controller,
-  })  : _controller = controller,
-        super(key: key);
+class Nav extends StatelessWidget {
+  final SidebarXController controller;
 
-  final SidebarXController _controller;
+  const Nav({
+    super.key,
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SidebarX(
-      controller: _controller,
+      controller: controller,
       theme: SidebarXTheme(
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Constants.canvasColor,
+          color: CANVAS_COLOR,
           borderRadius: BorderRadius.circular(20),
         ),
-        hoverColor: Constants.actionColor,
+        hoverColor: ACTION_COLOR,
         textStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
         selectedTextStyle: const TextStyle(color: Colors.white),
         itemTextPadding: const EdgeInsets.only(left: 30),
         selectedItemTextPadding: const EdgeInsets.only(left: 30),
         itemDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Constants.canvasColor),
+          border: Border.all(color: CANVAS_COLOR),
         ),
         selectedItemDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: Constants.actionColor.withOpacity(0.37),
+            color: ACTION_COLOR.withOpacity(0.37),
           ),
           gradient: const LinearGradient(
-            colors: [Constants.accentCanvasColor, Constants.canvasColor],
+            colors: [ACCENT_CANVAS_COLOR, CANVAS_COLOR],
           ),
           boxShadow: [
             BoxShadow(
@@ -57,10 +56,10 @@ class NavBar extends StatelessWidget {
       extendedTheme: const SidebarXTheme(
         width: 200,
         decoration: BoxDecoration(
-          color: Constants.canvasColor,
+          color: CANVAS_COLOR,
         ),
       ),
-      footerDivider: Constants.divider,
+      footerDivider: DIVIDER,
       headerBuilder: (context, extended) {
         return SizedBox(
           height: 100,
@@ -90,8 +89,13 @@ class NavBar extends StatelessWidget {
         SidebarXItem(
             icon: Icons.logout,
             label: 'Logout',
-            onTap: () {
-              debugPrint('Logout');
+            onTap: () async {
+              await CLIENT.auth.signOut().onError((error, stackTrace) {
+                ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
+              }).whenComplete(() {
+                ScaffoldMessenger.of(context).showSnackBar(SuccessSnackBar('Logged out. See you soon!'));
+                Navigator.of(context).pushReplacementNamed('/login');
+              });
             }),
       ],
     );
