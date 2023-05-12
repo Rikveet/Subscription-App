@@ -18,11 +18,9 @@ class Login extends StatefulWidget {
 
 class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   final GlobalKey<FormBuilderState> formStateKey = GlobalKey<FormBuilderState>(); // form state
-  late final StreamSubscription<AuthState> authStateSubscription; // auth state
   bool fieldsEmpty = true;
   bool invalidCredentials = false;
   bool verifying = false;
-  bool redirecting = false; // to avoid multiple redirects on auth state change
 
   Future<void> signIn(String email, String password) async {
     setState(() {
@@ -43,19 +41,6 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     setState(() {
       verifying = false;
     });
-  }
-
-  @override
-  void initState() {
-    authStateSubscription = CLIENT.auth.onAuthStateChange.listen((data) {
-      if (redirecting) return;
-      final session = data.session;
-      if (session != null) {
-        redirecting = true;
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    });
-    super.initState();
   }
 
   @override
@@ -163,9 +148,5 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
   }
 
-  @override
-  void dispose() {
-    authStateSubscription.cancel();
-    super.dispose();
-  }
+
 }

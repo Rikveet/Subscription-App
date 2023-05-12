@@ -7,20 +7,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final String SUPABASE_URL = dotenv.env['SUPABASE_URL'] as String;
 final String SUPABASE_KEY = dotenv.env['SUPABASE_KEY'] as String;
 final CLIENT = Supabase.instance.client;
-const PRIMARY_COLOR = Color(0xFF2A0C4E);
-const CANVAS_COLOR = Color(0xFF2A0C4E);
-const SCAFFOLD_BACKGROUND_COLOR = Color(0xFFFFF8F0);
-const ACCENT_CANVAS_COLOR = Color(0xFF9E2B25);
+const DASHBOARD_MENU_BACKGROUND_COLOR = Color(0xFF13293D);
+const BACKGROUND_COLOR = Color(0xFFDDDBF1);
+const ACTIVE_OPTION_COLOR = Color(0xFFD1BEB0);
+const ACTION_COLOR = Color(0xFF5F021F);
 const WHITE = Colors.white;
-final ACTION_COLOR = const Color(0xFF9E2B25).withOpacity(0.6);
-const BUTTON_COLOR = Color(0xFF5135B4);
 final DIVIDER = Divider(color: WHITE.withOpacity(0.3), height: 1);
 const FORM_VERTICAL_GAP = SizedBox(height: 15);
 ButtonStyle FORM_BUTTON_STYLE = ButtonStyle(
   // styling for menu buttons
   shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0))),
   textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18, color: WHITE)),
-  backgroundColor: MaterialStateProperty.all(BUTTON_COLOR),
+  backgroundColor: MaterialStateProperty.all(ACTION_COLOR),
   fixedSize: MaterialStateProperty.all(const Size(150, 50)),
 );
 
@@ -43,7 +41,6 @@ SnackBar SuccessSnackBar(String content) {
   );
 }
 
-
 SnackBar ErrorSnackBar(String content) {
   return SnackBar(
     content: Text(
@@ -56,17 +53,13 @@ SnackBar ErrorSnackBar(String content) {
 
 String getTitleByIndex(int index) {
   switch (index) {
-    case 0:
-      return 'Home';
     case 1:
       return 'Reminders';
     case 2:
       return 'Settings';
     case 3:
       return 'Authorize Account';
-    case 4:
-      return 'Settings';
     default:
-      return 'Not found page';
+      return 'Home';
   }
 }

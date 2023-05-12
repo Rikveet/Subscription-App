@@ -17,7 +17,7 @@ class Nav extends StatelessWidget {
       theme: SidebarXTheme(
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: CANVAS_COLOR,
+          color: DASHBOARD_MENU_BACKGROUND_COLOR,
           borderRadius: BorderRadius.circular(20),
         ),
         hoverColor: ACTION_COLOR,
@@ -27,16 +27,14 @@ class Nav extends StatelessWidget {
         selectedItemTextPadding: const EdgeInsets.only(left: 30),
         itemDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: CANVAS_COLOR),
+          border: Border.all(color: DASHBOARD_MENU_BACKGROUND_COLOR),
         ),
         selectedItemDecoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: ACTION_COLOR.withOpacity(0.37),
+            color: ACTIVE_OPTION_COLOR.withOpacity(0.4),
           ),
-          gradient: const LinearGradient(
-            colors: [ACCENT_CANVAS_COLOR, CANVAS_COLOR],
-          ),
+          color: ACTION_COLOR,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.28),
@@ -56,7 +54,7 @@ class Nav extends StatelessWidget {
       extendedTheme: const SidebarXTheme(
         width: 200,
         decoration: BoxDecoration(
-          color: CANVAS_COLOR,
+          color: DASHBOARD_MENU_BACKGROUND_COLOR,
         ),
       ),
       footerDivider: DIVIDER,
@@ -94,7 +92,7 @@ class Nav extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
               }).whenComplete(() {
                 ScaffoldMessenger.of(context).showSnackBar(SuccessSnackBar('Logged out. See you soon!'));
-                Navigator.of(context).pushReplacementNamed('/login');
+                //Navigator.of(context).pushReplacementNamed('/login');
               });
             }),
       ],

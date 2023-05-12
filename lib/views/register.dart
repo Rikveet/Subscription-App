@@ -3,6 +3,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:lottie/lottie.dart';
 import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/widgets/form/core/input_field.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -15,9 +16,30 @@ class Register extends StatefulWidget {
 
 class RegisterState extends State<Register> with SingleTickerProviderStateMixin {
   final GlobalKey<FormBuilderState> formStateKey = GlobalKey<FormBuilderState>();
-  late AnimationController controller;
   bool fieldsEmpty = true;
   bool registering = false;
+
+  Future<void> signUp(String email, String password) async {
+    setState(() {
+      registering = true;
+    });
+    try {
+      await CLIENT.auth.signUp(email: email, password: password);
+      Navigator.pushReplacementNamed(context, '/login');
+      ScaffoldMessenger.of(context).showSnackBar(SuccessSnackBar('Account created please check your email to verify your account.'));
+    } on AuthException catch (error) {
+      if (error.statusCode == '500') {
+        ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not authorized to create an account. Please contact the admin.'));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar(error.message));
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
+    }
+    setState(() {
+      registering = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,12 +127,7 @@ class RegisterState extends State<Register> with SingleTickerProviderStateMixin 
                       : () async {
                           if (formStateKey.currentState!.validate()) {
                             final fields = formStateKey.currentState!.fields;
-                            setState(() {
-                              registering = true;
-                            });
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   const SnackBar(content: Text('Processing Data')),
-                            // );
+                            signUp(fields['Email']!.value as String, fields['Password']!.value as String);
                           }
                         },
                   icon: registering ? Loading(20, 20, 'loading_plane') : const Icon(Icons.person_add),

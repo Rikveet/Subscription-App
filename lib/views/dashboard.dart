@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:radha_swami_management_system/views/dashboard_views/attendee_list_display.dart';
+import 'package:radha_swami_management_system/views/dashboard_views/attendee_list_table.dart';
+import 'package:radha_swami_management_system/views/dashboard_views/authorized_users.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/widgets/nav.dart';
@@ -17,7 +18,12 @@ class DashboardState extends State<Dashboard> {
   final dashboardController = SidebarXController(selectedIndex: 0, extended: true);
   final key = GlobalKey<ScaffoldState>();
 
-  // TODO: try and implement a detection system to detect if user logged out
+  late final Stream<List<Map<String, dynamic>>>? usersStream;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +33,7 @@ class DashboardState extends State<Dashboard> {
         key: key,
         appBar: isSmallScreen
             ? AppBar(
-                backgroundColor: CANVAS_COLOR,
+                backgroundColor: DASHBOARD_MENU_BACKGROUND_COLOR,
                 title: Text(getTitleByIndex(dashboardController.selectedIndex)),
                 leading: IconButton(
                   onPressed: () {
@@ -51,7 +57,7 @@ class DashboardState extends State<Dashboard> {
                     case 2:
                       return Container(); // Settings
                     case 3:
-                      return Container(); // Authorize Accounts
+                      return AuthorizedUsersTable(); // Authorize Accounts
                     default: // case 0 and any other case that only uses onTap functionality
                       return AttendeeListTable();
                   }
@@ -62,5 +68,11 @@ class DashboardState extends State<Dashboard> {
         ]),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    dashboardController.dispose();
+    super.dispose();
   }
 }

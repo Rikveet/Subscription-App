@@ -29,11 +29,15 @@ class App extends StatelessWidget {
       title: 'Radha Swami',
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
-      routes: {'/login': (context) => const Login(), '/register': (context) => const Register(), '/home': (context) => Dashboard()},
+      routes: {
+        '/login': (context) => WillPopScope(onWillPop: () async => false, child: const Login()), // block routes being changed form system request
+        '/register': (context) => WillPopScope(onWillPop: () async => false, child: const Register()),
+        '/home': (context) => WillPopScope(onWillPop: () async => false, child: const Dashboard()),
+      },
       theme: ThemeData(
-        primaryColor: PRIMARY_COLOR,
-        canvasColor: CANVAS_COLOR,
-        scaffoldBackgroundColor: SCAFFOLD_BACKGROUND_COLOR,
+        primaryColor: ACTION_COLOR,
+        canvasColor: DASHBOARD_MENU_BACKGROUND_COLOR,
+        scaffoldBackgroundColor: BACKGROUND_COLOR,
         textTheme: const TextTheme(
           headlineSmall: TextStyle(
             color: Colors.white,

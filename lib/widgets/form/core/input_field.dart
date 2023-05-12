@@ -39,12 +39,12 @@ class InputFieldState extends State<InputField> {
                   icon: Icon(isObscured ? Icons.remove_red_eye : Icons.remove_red_eye_outlined))
               : null,
           enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blueGrey)),
-          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: PRIMARY_COLOR)),
+          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: ACTIVE_OPTION_COLOR)),
           errorBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.red)),
           fillColor: WHITE,
           filled: true,
           labelText: widget.labelText,
-          labelStyle: const TextStyle(color: PRIMARY_COLOR)),
+          labelStyle: const TextStyle(color: Colors.black)),
     );
   }
 }

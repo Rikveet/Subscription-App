@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AttendeeListDisplay extends DataTableSource {
+class UserList extends DataTableSource {
   final List<Map<String, dynamic>> data;
 
-  AttendeeListDisplay({required this.data});
+  UserList({required this.data});
 
   @override
   DataRow? getRow(int index) {
     return DataRow(cells: [
-      DataCell(Text(data[index]['firstName'])),
-      DataCell(Text(data[index]['lastName'])),
+      DataCell(Text(data[index]['name'])),
       DataCell(Text(data[index]['email'])),
-      DataCell((Text((data[index]['phoneNumber'] ?? '').toString()))),
-      DataCell(Text(data[index]['city'])),
+      DataCell(Row(
+        children: (data[index]['permissions'] as List<dynamic>).map((permission) => Text(permission as String)).toList(),
+      )),
     ]);
   }
 
