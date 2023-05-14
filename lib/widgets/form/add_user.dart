@@ -108,8 +108,8 @@ class AddUserFormState extends State<AddUserForm> {
               isResettable = false;
               return;
             }
-            bool name = isFieldEmpty(fields['Name']);
-            bool email = isFieldEmpty(fields['Email']);
+            bool name = isFieldEmpty(fields['Name']?.value);
+            bool email = isFieldEmpty(fields['Email']?.value);
             // resettable if any of the fields are filled
             isResettable = name || email;
             // all required fields are filled
@@ -225,6 +225,7 @@ class AddUserFormState extends State<AddUserForm> {
               const SizedBox(
                 width: 10,
               ),
+              widget.user != null?
               IconButton(
                 onPressed: () {
                   showDialog(
@@ -281,7 +282,8 @@ class AddUserFormState extends State<AddUserForm> {
                       });
                 },
                 icon: const Icon(Icons.delete),
-              ),
+                color: ACTION_COLOR,
+              ): Container(),
             ]),
           ],
         ),

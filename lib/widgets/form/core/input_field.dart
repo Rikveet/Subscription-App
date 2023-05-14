@@ -47,6 +47,7 @@ class InputFieldState extends State<InputField> {
           filled: true,
           labelText: widget.labelText,
           labelStyle: const TextStyle(color: Colors.black)),
-    );
+    )
+      ;
   }
 }

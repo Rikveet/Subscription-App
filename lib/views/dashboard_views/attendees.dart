@@ -88,7 +88,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                         setState(() {
                           searchFilter = search;
                         });
-                      }else{
+                      } else {
                         setState(() {
                           searchFilter = null;
                         });
@@ -110,22 +110,24 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                   ),
                 ),
               ),
-              Positioned(
-                right: 10,
-                bottom: 10,
-                child: FloatingActionButton(
-                  backgroundColor: ACTION_COLOR,
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AddAttendeeForm(registeredEmails: registeredEmails);
-                      },
-                    );
-                  },
-                  child: const Icon(Icons.person_add),
-                ),
-              )
+              widget.isClientEditor
+                  ? Positioned(
+                      right: 10,
+                      bottom: 10,
+                      child: FloatingActionButton(
+                        backgroundColor: ACTION_COLOR,
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AddAttendeeForm(registeredEmails: registeredEmails);
+                            },
+                          );
+                        },
+                        child: const Icon(Icons.person_add),
+                      ),
+                    )
+                  : Container()
             ]);
           },
         )

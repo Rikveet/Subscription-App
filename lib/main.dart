@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,6 +8,7 @@ import 'package:radha_swami_management_system/views/login.dart';
 import 'package:radha_swami_management_system/views/register.dart';
 import 'package:radha_swami_management_system/views/spalsh_page.dart';
 import 'package:radha_swami_management_system/views/dashboard.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
@@ -15,6 +18,16 @@ void main() async {
     url: SUPABASE_URL,
     anonKey: SUPABASE_KEY,
   );
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await windowManager.ensureInitialized();
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    WindowManager.instance.setMinimumSize(const Size(1000, 563));
+    WindowManager.instance.setMaximumSize(const Size(1920, 1080));
+    WindowManager.instance.setTitle('Radha Swami');
+  }
 
   runApp(const App()); // launch app
 }
