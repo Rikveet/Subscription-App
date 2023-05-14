@@ -7,8 +7,9 @@ class InputField extends StatefulWidget {
   final FormFieldValidator<String> validator;
   final bool autoFocus;
   final bool obscureText;
+  final String? initialValue;
 
-  const InputField({super.key, required this.labelText, required this.validator, this.autoFocus = false, this.obscureText = false});
+  const InputField({super.key, required this.labelText, required this.validator, this.initialValue, this.autoFocus = false, this.obscureText = false});
 
   @override
   InputFieldState createState() {
@@ -23,6 +24,7 @@ class InputFieldState extends State<InputField> {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: widget.labelText,
+      initialValue: widget.initialValue,
       validator: widget.validator,
       autofocus: widget.autoFocus,
       autovalidateMode: AutovalidateMode.onUserInteraction,

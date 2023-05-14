@@ -8,7 +8,11 @@ import 'package:radha_swami_management_system/widgets/form/core/input_row.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddUserForm extends StatefulWidget {
-  const AddUserForm({super.key});
+  // update mode info
+  final AuthorizedUser? user;
+  final List<String> registeredEmails;
+
+  const AddUserForm({super.key, required this.registeredEmails, this.user});
 
   @override
   AddUserFormState createState() {
@@ -21,29 +25,67 @@ class AddUserFormState extends State<AddUserForm> {
 
   bool isSubmittable = false;
   bool isResettable = false;
-  bool submitting = false;
+  bool isSubmitting = false;
 
-  // checkbox values
+  // checkbox values for user permissions
   bool isAdmin = false;
   bool isEditor = false;
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      final permissions = widget.user?.permissions;
+      if (permissions == null) {
+        return;
+      }
+      isAdmin = permissions.contains('ADMIN');
+      isEditor = permissions.contains('EDITOR');
+    });
+  }
 
   void reset() {
     setState(() {
       formKey = GlobalKey<FormBuilderState>();
       isSubmittable = false;
       isResettable = false;
-      submitting = false;
+      isSubmitting = false;
+      final permissions = widget.user?.permissions;
+      if (permissions == null) {
+        return;
+      }
+      isAdmin = permissions.contains('ADMIN');
+      isEditor = permissions.contains('EDITOR');
     });
   }
 
   Future<void> submit(AuthorizedUser user) async {
     try {
       await Supabase.instance.client.from('authorized_user').insert({'name': user.name, 'email': user.email, 'permissions': user.permissions});
+      reset();
     } on PostgrestException catch (error) {
-      debugPrint('${error.toString()}');
-      if(error.details == 'Forbidden'){
+      if (error.details == 'Forbidden') {
         ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change'));
-      }else{
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar(error.message));
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
+    }
+  }
+
+  Future<void> update(AuthorizedUser user) async {
+    try {
+      await Supabase.instance.client
+          .from('authorized_user')
+          .update({'name': user.name, 'email': user.email, 'permissions': user.permissions}).match({'email': widget.user!.email}).whenComplete(() {
+        reset();
+        Navigator.of(context).pop();
+      });
+    } on PostgrestException catch (error) {
+      if (error.details == 'Forbidden') {
+        ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change'));
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar(error.message));
       }
     } catch (error) {
@@ -54,7 +96,7 @@ class AddUserFormState extends State<AddUserForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Register'),
+      title: Text(widget.user != null ? 'Update' : 'Authorize'),
       content: FormBuilder(
         key: formKey,
         onChanged: () {
@@ -66,8 +108,8 @@ class AddUserFormState extends State<AddUserForm> {
               isResettable = false;
               return;
             }
-            bool name = (fields['Name']?.value != null && (fields['Name']?.value as String).isNotEmpty);
-            bool email = (fields['Email']?.value != null && (fields['Email']?.value as String).isNotEmpty);
+            bool name = isFieldEmpty(fields['Name']);
+            bool email = isFieldEmpty(fields['Email']);
             // resettable if any of the fields are filled
             isResettable = name || email;
             // all required fields are filled
@@ -80,6 +122,7 @@ class AddUserFormState extends State<AddUserForm> {
           children: [
             InputField(
               labelText: 'Name',
+              initialValue: widget.user?.name,
               autoFocus: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -91,9 +134,14 @@ class AddUserFormState extends State<AddUserForm> {
             FORM_VERTICAL_GAP,
             InputField(
               labelText: 'Email',
+              initialValue: widget.user?.email,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return "Required*";
+                }
+                if (widget.registeredEmails.contains(value) && value.compareTo(widget.user?.email ?? '') != 0) {
+                  // User entered an email that is already registered and not their email.
+                  return "Email is already registered";
                 }
                 return null;
               },
@@ -106,6 +154,8 @@ class AddUserFormState extends State<AddUserForm> {
                     onChanged: (value) {
                       setState(() {
                         isAdmin = value ?? false;
+                        isSubmittable = true;
+                        isResettable = true;
                       });
                     },
                   ),
@@ -116,6 +166,8 @@ class AddUserFormState extends State<AddUserForm> {
                     onChanged: (value) {
                       setState(() {
                         isEditor = value ?? false;
+                        isSubmittable = true;
+                        isResettable = true;
                       });
                     },
                   ),
@@ -124,7 +176,7 @@ class AddUserFormState extends State<AddUserForm> {
             FORM_VERTICAL_GAP,
             Row(children: [
               ElevatedButton.icon(
-                onPressed: !isSubmittable || submitting
+                onPressed: !isSubmittable || isSubmitting
                     ? null
                     : () async {
                         if (formKey.currentState!.validate()) {
@@ -136,22 +188,23 @@ class AddUserFormState extends State<AddUserForm> {
                           if (isEditor) {
                             permissions.add('EDITOR');
                           }
-                          submit(AuthorizedUser(
-                            name: fields['Name']!.value as String,
-                            email: fields['Email']!.value as String,
-                            permissions: permissions,
-                          ));
+                          final name = fields['Name']!.value as String;
+                          final email = fields['Email']!.value as String;
+
+                          final user = AuthorizedUser(name: name, email: email, permissions: permissions);
+                          if (widget.user != null) {
+                            update(user);
+                          } else {
+                            submit(user);
+                          }
                           setState(() {
-                            submitting = true;
+                            isSubmitting = true;
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Processing Data')),
-                          );
                         }
                       },
                 style: FORM_BUTTON_STYLE,
-                icon: submitting ? const Icon(Icons.sync) : const Icon(Icons.person),
-                label: submitting ? const Text('Uploading') : const Text('Register'),
+                icon: isSubmitting ? const Icon(Icons.sync) : Icon(widget.user != null ? Icons.cloud_upload : Icons.person_add),
+                label: isSubmitting ? const Text('Uploading') : Text(widget.user != null ? 'Edit' : 'Register'),
               ),
               const SizedBox(
                 width: 10,
@@ -166,8 +219,68 @@ class AddUserFormState extends State<AddUserForm> {
                         );
                       },
                 style: FORM_BUTTON_STYLE,
-                icon: const Icon(Icons.clear),
-                label: const Text('Clear All'),
+                icon: Icon(widget.user != null ? Icons.refresh : Icons.clear),
+                label: Text(widget.user != null ? 'Reset' : 'Clear All'),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return (AlertDialog(
+                          title: const Text('Are you sure?'),
+                          content: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('You are about to delete:'),
+                              FORM_VERTICAL_GAP,
+                              Text('Name: ${widget.user?.name ?? "Not found"}'),
+                              FORM_VERTICAL_GAP,
+                              Text('Email: ${widget.user?.email ?? "Not found"}'),
+                              FORM_VERTICAL_GAP,
+                              Row(
+                                children: [
+                                  ElevatedButton.icon(
+                                      icon: const Icon(Icons.delete_forever),
+                                      label: const Text("Delete"),
+                                      style: FORM_BUTTON_STYLE,
+                                      onPressed: widget.user?.email != null && widget.user!.email.isNotEmpty
+                                          ? () async {
+                                              try {
+                                                await CLIENT.from('authorized_user').delete().match({'email': widget.user?.email}).whenComplete(() {
+                                                  Navigator.pop(context);
+                                                  Navigator.pop(context);
+                                                });
+                                              } on PostgrestException {
+                                                ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change.'));
+                                              } catch (error) {
+                                                ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
+                                              }
+                                            }
+                                          : null),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  ElevatedButton.icon(
+                                      icon: const Icon(Icons.cancel),
+                                      style: FORM_BUTTON_STYLE,
+                                      label: const Text("Cancel"),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      })
+                                ],
+                              )
+                            ],
+                          ),
+                        ));
+                      });
+                },
+                icon: const Icon(Icons.delete),
               ),
             ]),
           ],

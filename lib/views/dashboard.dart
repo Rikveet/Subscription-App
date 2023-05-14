@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:radha_swami_management_system/views/dashboard_views/attendee_list_table.dart';
+import 'package:radha_swami_management_system/views/dashboard_views/attendees.dart';
 import 'package:radha_swami_management_system/views/dashboard_views/authorized_users.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:radha_swami_management_system/constants.dart';
@@ -16,9 +16,10 @@ class Dashboard extends StatefulWidget {
 
 class DashboardState extends State<Dashboard> {
   final dashboardController = SidebarXController(selectedIndex: 0, extended: true);
+
   final key = GlobalKey<ScaffoldState>();
 
-  late final Stream<List<Map<String, dynamic>>>? usersStream;
+  final Stream<List<Map<String, dynamic>>> usersStream = CLIENT.from('authorized_user').stream(primaryKey: ['id']);
 
   @override
   void initState() {
@@ -51,16 +52,36 @@ class DashboardState extends State<Dashboard> {
               child: AnimatedBuilder(
                 animation: dashboardController,
                 builder: (context, child) {
-                  switch (dashboardController.selectedIndex) {
-                    case 1:
-                      return Container(); // Reminders
-                    case 2:
-                      return Container(); // Settings
-                    case 3:
-                      return AuthorizedUsersTable(); // Authorize Accounts
-                    default: // case 0 and any other case that only uses onTap functionality
-                      return AttendeeListTable();
-                  }
+                  return StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: usersStream,
+                      builder: (context, snapshot) {
+                        final String? clientEmail = CLIENT.auth.currentUser?.email;
+                        bool isClientAdmin = false;
+                        bool isClientEditor = false;
+                        if (snapshot.hasData) {
+                          final rawUserList = snapshot.data!;
+                          final Map<String, dynamic>? userRow = clientEmail != null
+                              ? rawUserList.firstWhere((user) => user['email'] == clientEmail, orElse: () {
+                                  return {};
+                                })
+                              : null;
+                          if (userRow != null && userRow.isNotEmpty && rawUserList.isNotEmpty) {
+                            final permissions = (userRow['permissions'] as List<dynamic>).map((e) => e as String);
+                            isClientAdmin = permissions.contains("ADMIN");
+                            isClientEditor = permissions.contains("EDITOR");
+                          }
+                        }
+                        switch (dashboardController.selectedIndex) {
+                          case 1:
+                            return Container(); // Reminders
+                          case 2:
+                            return Container(); // Settings
+                          case 3:
+                            return AuthorizedUsersTable(isClientAdmin: isClientAdmin, snapshot: snapshot);
+                          default: // case 0 and any other case that only uses onTap functionality
+                            return AttendeeListTable(isClientEditor: isClientEditor);
+                        }
+                      });
                 },
               ),
             ),

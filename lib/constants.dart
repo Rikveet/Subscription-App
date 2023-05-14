@@ -14,6 +14,7 @@ const ACTION_COLOR = Color(0xFF5F021F);
 const WHITE = Colors.white;
 final DIVIDER = Divider(color: WHITE.withOpacity(0.3), height: 1);
 const FORM_VERTICAL_GAP = SizedBox(height: 15);
+
 ButtonStyle FORM_BUTTON_STYLE = ButtonStyle(
   // styling for menu buttons
   shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0))),
@@ -27,6 +28,11 @@ Text FormTitle(String text) {
     text,
     style: const TextStyle(fontSize: 25),
   );
+}
+
+bool isFieldEmpty(dynamic field){
+  // function to check if a given field in form is empty
+  return(field != null && (field as String).isNotEmpty);
 }
 
 Widget Loading(double width, double height, String type) => Center(child: SizedBox(width: width, height: height, child: Lottie.asset('assets/animations/$type.json')));
