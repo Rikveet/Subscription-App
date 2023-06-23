@@ -29,7 +29,22 @@ class UserList extends DataTableSource {
         DataCell(Text(data[index]['name'])),
         DataCell(Text(data[index]['email'])),
         DataCell(Row(
-          children: (data[index]['permissions'] as List<dynamic>).map((permission) => Text(permission as String)).toList(),
+          children: (data[index]['permissions'] as List<dynamic>)
+              .map((permission) => Container(
+                    margin: const EdgeInsets.only(right: 10.0),
+                    child: FilledButton(
+                      onPressed: null,
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.black),
+                        minimumSize: MaterialStateProperty.all(const Size(90, 40)),
+                      ),
+                      child: Text(
+                        permission as String,
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ))
+              .toList(),
         ))
       ],
     );

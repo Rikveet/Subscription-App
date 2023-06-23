@@ -21,6 +21,7 @@ class Nav extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         hoverColor: ACTION_COLOR,
+        hoverTextStyle: const TextStyle(color: Colors.white),
         textStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
         selectedTextStyle: const TextStyle(color: Colors.white),
         itemTextPadding: const EdgeInsets.only(left: 30),
@@ -60,7 +61,7 @@ class Nav extends StatelessWidget {
       footerDivider: DIVIDER,
       headerBuilder: (context, extended) {
         return SizedBox(
-          height: 100,
+          width: 200,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Image.asset('assets/images/avatar.png'),
@@ -70,7 +71,7 @@ class Nav extends StatelessWidget {
       items: [
         const SidebarXItem(
           icon: Icons.list,
-          label: 'Home',
+          label: 'Attendees',
         ),
         // const SidebarXItem(
         //   icon: Icons.favorite,
@@ -82,7 +83,7 @@ class Nav extends StatelessWidget {
         // ),
         const SidebarXItem(
           icon: Icons.person,
-          label: 'Authorize Account',
+          label: 'Editors',
         ),
         SidebarXItem(
             icon: Icons.logout,

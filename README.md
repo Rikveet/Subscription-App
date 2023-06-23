@@ -23,7 +23,7 @@ A flutter project to help manage attendees/subscribers for your service.
 - [x] Complete field validation for inputs in the flutter app.
 - [ ] Implement sorting functionality for attendees and authorized users table view.
 - [ ] Implement ***reminders*** db to allow editors to generate reminders using attendee emails.
-- [ ] Implement export to csv for attendees table.
+- [x] Implement export to csv for attendees table.
 - [ ] Implement google api to update google sheets upon **INSERT** to ***attendee*** db.
 
 ## How to implement for your own app

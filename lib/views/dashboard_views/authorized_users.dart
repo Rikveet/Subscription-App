@@ -19,7 +19,7 @@ class AuthorizedUsersTable extends StatefulWidget {
 
 class AuthorizedUsersTableState extends State<AuthorizedUsersTable> {
   // search
-  String? searchFilter;
+  String searchFilter = '';
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -39,16 +39,17 @@ class AuthorizedUsersTableState extends State<AuthorizedUsersTable> {
 
     final registeredEmails = rawUserList.map((user) => user['email'] as String).toList();
 
-    List<Map<String, dynamic>>? filteredList;
+    List<Map<String, dynamic>> filteredList = userList;
 
-    if (searchFilter != null && searchFilter!.isNotEmpty) {
+    if (searchFilter.isNotEmpty) {
       // generate filtered list
       filteredList = userList
-          .where((user) => ((user['name'] as String).toLowerCase().contains(searchFilter as String) ||
-              (user['email'] as String).toLowerCase().contains(searchFilter as String) ||
-              (user['permissions'] as List<dynamic>).where((permission) => (permission as String).toLowerCase().contains(searchFilter as String)).toList().isNotEmpty))
+          .where((user) => ((user['name'] as String).toLowerCase().contains(searchFilter) ||
+              (user['email'] as String).toLowerCase().contains(searchFilter) ||
+              (user['permissions'] as List<dynamic>).where((permission) => (permission as String).toLowerCase().contains(searchFilter)).toList().isNotEmpty))
           .toList();
     }
+
     return Stack(
       children: [
         ListView(
@@ -59,9 +60,19 @@ class AuthorizedUsersTableState extends State<AuthorizedUsersTable> {
               rowsPerPage: 6,
               checkboxHorizontalMargin: 20,
               horizontalMargin: 60,
-              columns: const [DataColumn(label: Text('Name')), DataColumn(label: Text('Email')), DataColumn(label: Text('Permissions'))],
+              columns: const [
+                DataColumn(
+                  label: Text('Name'),
+                ),
+                DataColumn(
+                  label: Text('Email'),
+                ),
+                DataColumn(
+                  label: Text('Permissions'),
+                )
+              ],
               source: UserList(
-                data: filteredList != null && filteredList.isNotEmpty ? filteredList : userList,
+                data: filteredList,
                 registeredEmails: registeredEmails,
                 context: context,
                 isEditable: widget.isClientAdmin,
@@ -81,7 +92,7 @@ class AuthorizedUsersTableState extends State<AuthorizedUsersTable> {
                 if (fields == null) {
                   return;
                 }
-                String search = (fields['Search']?.value ?? '') as String;
+                String search = ((fields['Search']?.value ?? '') as String).toLowerCase().replaceAll('-', '');
                 if (search.isNotEmpty) {
                   setState(() {
                     searchFilter = search;
@@ -95,7 +106,7 @@ class AuthorizedUsersTableState extends State<AuthorizedUsersTable> {
                 labelText: 'Search',
                 autoFocus: false,
                 validator: (value) {
-                  if (value != null && value.isNotEmpty && filteredList != null && filteredList.isEmpty) {
+                  if (value != null && value.isNotEmpty && filteredList.isEmpty) {
                     return 'No search results found!';
                   }
                   return null;

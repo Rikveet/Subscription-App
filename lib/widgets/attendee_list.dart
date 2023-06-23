@@ -25,7 +25,7 @@ class AttendeeList extends DataTableSource {
                     builder: (context) {
                       final firstName = data[index]['firstName'] as String;
                       final lastName = data[index]['lastName'] as String;
-                      final email = (data[index]['email'] ?? '').toString();
+                      final email = (data[index]['email'] ?? '') as String;
                       final phoneNumber = data[index]['phoneNumber'].toString();
                       final city = data[index]['city'];
                       return AddAttendeeForm(

@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:csv/csv.dart';
+import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/widgets/form/add_attendee.dart';
 import 'package:radha_swami_management_system/widgets/attendee_list.dart';
@@ -18,7 +22,8 @@ class AttendeeListTable extends StatefulWidget {
 
 class AttendeeListTableState extends State<AttendeeListTable> {
   // search
-  String? searchFilter;
+  String searchFilter = '';
+  bool isExportingCsv = false;
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
 
   // attendee list db stream
@@ -37,20 +42,19 @@ class AttendeeListTableState extends State<AttendeeListTable> {
             final attendeeList = snapshot.data!;
 
             final registeredPhoneNumbers = attendeeList.map((e) {
-             return (e['phoneNumber'] as int).toString();
+              return (e['phoneNumber'] as int).toString();
             }).toList();
 
-            List<Map<String, dynamic>>? filteredList;
+            List<Map<String, dynamic>>? filteredList = attendeeList;
 
-            if (searchFilter != null && searchFilter!.isNotEmpty) {
+            if (searchFilter.isNotEmpty) {
               // generate filtered list
-              final _searchFilter = (searchFilter as String).toLowerCase().replaceAll('-', '');
               filteredList = attendeeList
-                  .where((user) => ((user['firstName'] as String).toLowerCase().contains(_searchFilter) ||
-                      (user['lastName'] as String).toLowerCase().contains(_searchFilter) ||
-                      (user['email'] ?? '').toLowerCase().contains(_searchFilter) ||
-                      (user['phoneNumber']).toString().toLowerCase().contains(_searchFilter) ||
-                      (user['city'] as String).toLowerCase().contains(_searchFilter)))
+                  .where((user) => ((user['firstName'] as String).toLowerCase().contains(searchFilter) ||
+                      (user['lastName'] as String).toLowerCase().contains(searchFilter) ||
+                      (user['email'] ?? '').toLowerCase().contains(searchFilter) ||
+                      (user['phoneNumber']).toString().toLowerCase().contains(searchFilter) ||
+                      (user['city'] as String).toLowerCase().contains(searchFilter)))
                   .toList();
             }
             return Stack(children: [
@@ -67,11 +71,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                       DataColumn(label: Text('Phone Number')),
                       DataColumn(label: Text('City')),
                     ],
-                    source: AttendeeList(
-                        data: filteredList != null && filteredList.isNotEmpty ? filteredList : attendeeList,
-                        registeredEmails: registeredPhoneNumbers,
-                        isEditable: widget.isClientEditor,
-                        context: context),
+                    source: AttendeeList(data: filteredList, registeredEmails: registeredPhoneNumbers, isEditable: widget.isClientEditor, context: context),
                   ),
                 ],
               ),
@@ -87,14 +87,14 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                       if (fields == null) {
                         return;
                       }
-                      String search = (fields['Search']?.value ?? '') as String;
+                      String search = ((fields['Search']?.value ?? '') as String).toLowerCase().replaceAll('-', '');
                       if (search.isNotEmpty) {
                         setState(() {
                           searchFilter = search;
                         });
                       } else {
                         setState(() {
-                          searchFilter = null;
+                          searchFilter = '';
                         });
                       }
                     });
@@ -131,7 +131,85 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                         child: const Icon(Icons.person_add),
                       ),
                     )
-                  : Container()
+                  : Container(),
+              widget.isClientEditor
+                  ? Positioned(
+                      right: 75,
+                      bottom: 10,
+                      child: FloatingActionButton(
+                        backgroundColor: ACTION_COLOR,
+                        onPressed: !isExportingCsv
+                            ? () async {
+                                setState(() {
+                                  isExportingCsv = true;
+                                });
+                                try {
+                                  final rootDirectory = await getApplicationDocumentsDirectory();
+                                  String? directory = await FilesystemPicker.openDialog(
+                                    context: context,
+                                    rootDirectory: rootDirectory,
+                                    fsType: FilesystemType.folder,
+                                    rootName: 'Documents',
+                                    title: 'Select your save folder',
+                                    theme: FilesystemPickerTheme(
+                                      topBar: FilesystemPickerTopBarThemeData(
+                                          backgroundColor: DASHBOARD_MENU_BACKGROUND_COLOR,
+                                          titleTextStyle: TextStyle(
+                                            color: Colors.white,
+                                          )),
+                                    ),
+                                  );
+
+                                  if (directory == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Directory was not selected.'));
+                                    setState(() {
+                                      isExportingCsv = false;
+                                    });
+                                    return;
+                                  }
+
+                                  String path = '$directory\\Attendee List ${DateTime.now().toString().replaceAll(':', '-').split('.')[0]}.csv';
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Saving attendee list to $path')),
+                                  );
+
+                                  List<List<String>> data = [
+                                        [
+                                          'First Name',
+                                          'Last Name',
+                                          'Email',
+                                          'Phone Number',
+                                          'City',
+                                        ]
+                                      ] +
+                                      attendeeList
+                                          .map((user) => [
+                                                user['firstName'] as String,
+                                                user['lastName'] as String,
+                                                (user['email'] ?? '') as String,
+                                                user['phoneNumber'].toString(),
+                                                user['city'] as String,
+                                              ])
+                                          .toList();
+                                  String csvData = const ListToCsvConverter().convert(data);
+
+                                  final File file = await File(path).create(recursive: true);
+                                  await file.writeAsString(csvData);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Attendee list exported')),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Access denied. Please close the file or select another directory.'));
+                                }
+                                setState(() {
+                                  isExportingCsv = false;
+                                });
+                              }
+                            : null,
+                        child: const Icon(Icons.download_rounded),
+                      ))
+                  : Container(),
             ]);
           },
         )

@@ -137,6 +137,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
         },
         child: Container(
           constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500),
+          width: 350,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -205,7 +206,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                     }
                     if (widget.registeredPhoneNumbers.contains(value) && value.compareTo(widget.attendee?.phoneNumber ?? '') != 0) {
                       // User entered an email that is already registered and not their email.
-                      return "Phone number is already registered";
+                      return "Already in use";
                     }
                     return null;
                   },
@@ -228,6 +229,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                   if (widget.attendee?.city != _city) {
                     setState(() {
                       isSubmittable = true;
+                      isResettable = true;
                     });
                   }
                 },
