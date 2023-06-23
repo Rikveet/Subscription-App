@@ -145,6 +145,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                                 });
                                 try {
                                   final rootDirectory = await getApplicationDocumentsDirectory();
+                                  // ignore: use_build_context_synchronously
                                   String? directory = await FilesystemPicker.openDialog(
                                     context: context,
                                     rootDirectory: rootDirectory,
@@ -154,13 +155,14 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                                     theme: FilesystemPickerTheme(
                                       topBar: FilesystemPickerTopBarThemeData(
                                           backgroundColor: DASHBOARD_MENU_BACKGROUND_COLOR,
-                                          titleTextStyle: TextStyle(
+                                          titleTextStyle: const TextStyle(
                                             color: Colors.white,
                                           )),
                                     ),
                                   );
 
                                   if (directory == null) {
+                                    // ignore: use_build_context_synchronously
                                     ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Directory was not selected.'));
                                     setState(() {
                                       isExportingCsv = false;
@@ -169,6 +171,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                                   }
 
                                   String path = '$directory\\Attendee List ${DateTime.now().toString().replaceAll(':', '-').split('.')[0]}.csv';
+                                  // ignore: use_build_context_synchronously
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('Saving attendee list to $path')),
                                   );
@@ -196,6 +199,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                                   final File file = await File(path).create(recursive: true);
                                   await file.writeAsString(csvData);
 
+                                  // ignore: use_build_context_synchronously
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Attendee list exported')),
                                   );
