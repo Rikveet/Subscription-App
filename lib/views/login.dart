@@ -111,18 +111,18 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: TextButton(
-                    onPressed: () {
-                      //Navigator.pushReplacementNamed(context, '/register');
-                    },
-                    child: const Text(
-                      "Forgot your password?",
-                      style: TextStyle(decoration: TextDecoration.underline, color: Colors.black54),
-                    ),
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.bottomLeft,
+                //   child: TextButton(
+                //     onPressed: () {
+                //       //Navigator.pushReplacementNamed(context, '/register');
+                //     },
+                //     child: const Text(
+                //       "Forgot your password?",
+                //       style: TextStyle(decoration: TextDecoration.underline, color: Colors.black54),
+                //     ),
+                //   ),
+                // ),
                 FORM_VERTICAL_GAP,
                 ElevatedButton.icon(
                   onPressed: fieldsEmpty || verifying
