@@ -72,11 +72,11 @@ class DashboardState extends State<Dashboard> {
                           }
                         }
                         switch (dashboardController.selectedIndex) {
+                          // case 1:
+                          //   return Container(); // Reminders
+                          // case 2:
+                          //   return Container(); // Settings
                           case 1:
-                            return Container(); // Reminders
-                          case 2:
-                            return Container(); // Settings
-                          case 3:
                             return AuthorizedUsersTable(isClientAdmin: isClientAdmin, snapshot: snapshot);
                           default: // case 0 and any other case that only uses onTap functionality
                             return AttendeeListTable(isClientEditor: isClientEditor);

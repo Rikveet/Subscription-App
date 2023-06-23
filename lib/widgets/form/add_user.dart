@@ -128,6 +128,12 @@ class AddUserFormState extends State<AddUserForm> {
                 if (value == null || value.isEmpty) {
                   return "Required*";
                 }
+                if (value.length < 3) {
+                  return 'Too short, must be more than 3 letters';
+                }
+                if (!isText(value)) {
+                  return 'Only alphabets are allowed';
+                }
                 return null;
               },
             ),
@@ -138,6 +144,9 @@ class AddUserFormState extends State<AddUserForm> {
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return "Required*";
+                }
+                if (!isEmail(value)) {
+                  return "Not a valid email";
                 }
                 if (widget.registeredEmails.contains(value) && value.compareTo(widget.user?.email ?? '') != 0) {
                   // User entered an email that is already registered and not their email.

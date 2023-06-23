@@ -72,14 +72,14 @@ class Nav extends StatelessWidget {
           icon: Icons.list,
           label: 'Home',
         ),
-        const SidebarXItem(
-          icon: Icons.favorite,
-          label: 'Reminders',
-        ),
-        const SidebarXItem(
-          icon: Icons.settings,
-          label: 'Settings',
-        ),
+        // const SidebarXItem(
+        //   icon: Icons.favorite,
+        //   label: 'Reminders',
+        // ),
+        // const SidebarXItem(
+        //   icon: Icons.settings,
+        //   label: 'Settings',
+        // ),
         const SidebarXItem(
           icon: Icons.person,
           label: 'Authorize Account',

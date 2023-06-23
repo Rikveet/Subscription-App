@@ -61,11 +61,11 @@ SnackBar ErrorSnackBar(String content) {
 
 String getTitleByIndex(int index) {
   switch (index) {
+    // case 1:
+    //   return 'Reminders';
+    // case 2:
+    //   return 'Settings';
     case 1:
-      return 'Reminders';
-    case 2:
-      return 'Settings';
-    case 3:
       return 'Authorize Account';
     default:
       return 'Home';
