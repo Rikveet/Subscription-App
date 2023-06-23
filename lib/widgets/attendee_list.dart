@@ -25,11 +25,11 @@ class AttendeeList extends DataTableSource {
                     builder: (context) {
                       final firstName = data[index]['firstName'] as String;
                       final lastName = data[index]['lastName'] as String;
-                      final email = data[index]['email'] as String;
-                      final phoneNumber = (data[index]['phoneNumber'] ?? '').toString();
+                      final email = (data[index]['email'] ?? '').toString();
+                      final phoneNumber = data[index]['phoneNumber'].toString();
                       final city = data[index]['city'];
                       return AddAttendeeForm(
-                        registeredEmails: registeredEmails,
+                        registeredPhoneNumbers: registeredEmails,
                         attendee: Attendee(firstName: firstName, lastName: lastName, email: email, phoneNumber: phoneNumber, city: city),
                       );
                     },
@@ -39,7 +39,7 @@ class AttendeeList extends DataTableSource {
         cells: [
           DataCell(Text(data[index]['firstName'])),
           DataCell(Text(data[index]['lastName'])),
-          DataCell(Text(data[index]['email'])),
+          DataCell(Text(data[index]['email'] ?? '')),
           DataCell((Text(formattedPhoneNumber))),
           DataCell(Text(data[index]['city'])),
         ]);

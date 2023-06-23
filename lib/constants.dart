@@ -1,4 +1,5 @@
 // This class holds constant values for the application
+import 'package:country_state_city/utils/city_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lottie/lottie.dart';
@@ -14,6 +15,7 @@ const ACTION_COLOR = Color(0xFF5F021F);
 const WHITE = Colors.white;
 final DIVIDER = Divider(color: WHITE.withOpacity(0.3), height: 1);
 const FORM_VERTICAL_GAP = SizedBox(height: 15);
+final cities = getCountryCities('CA');
 
 ButtonStyle FORM_BUTTON_STYLE = ButtonStyle(
   // styling for menu buttons
@@ -69,3 +71,16 @@ String getTitleByIndex(int index) {
       return 'Home';
   }
 }
+
+bool isEmail(String value){
+  return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value);
+}
+
+bool isText(String value){
+  return RegExp(r"^[a-zA-Z ]*$").hasMatch(value);
+}
+
+bool isPhoneNumber(String value){
+  return RegExp(r"^[0-9]{10}$").hasMatch(value);
+}
+

@@ -8,9 +8,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddAttendeeForm extends StatefulWidget {
   final Attendee? attendee;
-  final List<String> registeredEmails;
+  final List<String> registeredPhoneNumbers;
 
-  const AddAttendeeForm({super.key, required this.registeredEmails, this.attendee});
+  const AddAttendeeForm({super.key, required this.registeredPhoneNumbers, this.attendee});
 
   @override
   AddAttendeeFormState createState() {
@@ -24,6 +24,26 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
   bool isSubmittable = false;
   bool isResettable = false;
   bool isSubmitting = false;
+  String city = 'Brampton';
+  List<String> states = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    loadCities();
+    setState(() {
+      if (widget.attendee != null && widget.attendee?.city != null && widget.attendee!.city.isNotEmpty) {
+        city = widget.attendee!.city;
+      }
+    });
+  }
+
+  Future<void> loadCities() async {
+    final stateList = await cities;
+    setState(() {
+      states = stateList.where((e) => e.name.isNotEmpty).map((e) => e.name).toList();
+    });
+  }
 
   void reset() {
     setState(() {
@@ -39,7 +59,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
         fields['Last Name']?.value == widget.attendee?.lastName &&
         fields['Email']?.value == widget.attendee?.email &&
         fields['Phone Number']?.value == widget.attendee?.phoneNumber &&
-        fields['City']?.value == widget.attendee?.city;
+        city == widget.attendee?.city;
   }
 
   Map<String, dynamic> getUploadableAttendee(Attendee attendee) {
@@ -71,7 +91,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
 
   Future<void> update(Attendee attendee) async {
     try {
-      await Supabase.instance.client.from('attendee').update(getUploadableAttendee(attendee)).match({'email': widget.attendee!.email}).whenComplete(() {
+      await Supabase.instance.client.from('attendee').update(getUploadableAttendee(attendee)).match({'phoneNumber': widget.attendee!.phoneNumber}).whenComplete(() {
         reset();
         Navigator.of(context).pop();
       });
@@ -108,11 +128,11 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
             bool lastName = isFieldEmpty(fields['Last Name']?.value);
             bool email = isFieldEmpty(fields['Email']?.value);
             bool phoneNumber = isFieldEmpty(fields['Phone Number']?.value);
-            bool city = isFieldEmpty(fields['City']?.value);
+            bool _city = isFieldEmpty(city);
             // resettable if any of the fields are filled
-            isResettable = firstName || lastName || email || phoneNumber || city;
+            isResettable = firstName || lastName || email || phoneNumber || _city;
             // all required fields are filled
-            isSubmittable = firstName && lastName && email && city;
+            isSubmittable = firstName && lastName && phoneNumber && _city;
           });
         },
         child: Container(
@@ -131,6 +151,12 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                       if (value == null || value.isEmpty) {
                         return "Required*";
                       }
+                      if (value.length < 3) {
+                        return 'Too short, must be more than 3 letters';
+                      }
+                      if (!isText(value)) {
+                        return 'Only alphabets are allowed';
+                      }
                       return null;
                     },
                   ),
@@ -140,6 +166,12 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Required*";
+                      }
+                      if (value.length < 3) {
+                        return 'Too short, must be more than 3 letters';
+                      }
+                      if (!isText(value)) {
+                        return 'Only alphabets are allowed';
                       }
                       return null;
                     },
@@ -153,11 +185,10 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                   initialValue: widget.attendee?.email,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return "Required*";
+                      return null;
                     }
-                    if (widget.registeredEmails.contains(value) && value.compareTo(widget.attendee?.email ?? '') != 0) {
-                      // User entered an email that is already registered and not their email.
-                      return "Email is already registered";
+                    if (!isEmail(value)) {
+                      return "Not a valid email";
                     }
                     return null;
                   },
@@ -166,20 +197,55 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                   labelText: 'Phone Number',
                   initialValue: widget.attendee?.phoneNumber,
                   validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Required*";
+                    }
+                    if (!isPhoneNumber(value)) {
+                      return "Not a phone number";
+                    }
+                    if (widget.registeredPhoneNumbers.contains(value) && value.compareTo(widget.attendee?.phoneNumber ?? '') != 0) {
+                      // User entered an email that is already registered and not their email.
+                      return "Phone number is already registered";
+                    }
                     return null;
                   },
                 ),
               ]),
               FORM_VERTICAL_GAP,
-              InputField(
-                labelText: 'City',
-                initialValue: widget.attendee?.city,
+              DropdownButtonFormField(
+                menuMaxHeight: 200,
+                items: states.map((String city) {
+                  return DropdownMenuItem(
+                      value: city,
+                      child: Row(
+                        children: <Widget>[Text(city)],
+                      ));
+                }).toList(),
+                onChanged: (_city) {
+                  if (_city != null) {
+                    setState(() => city = _city);
+                  }
+                  if (widget.attendee?.city != _city) {
+                    setState(() {
+                      isSubmittable = true;
+                    });
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Required*";
+                    return 'Required*';
                   }
                   return null;
                 },
+                value: city,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  hintText: 'City',
+                  // errorText: errorSnapshot.data == 0 ? Localization.of(context).categoryEmpty : null
+                ),
+                dropdownColor: Colors.white,
               ),
               FORM_VERTICAL_GAP,
               Row(children: [
@@ -192,9 +258,9 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                             final attendee = Attendee(
                                 firstName: fields['First Name']!.value as String,
                                 lastName: fields['Last Name']!.value as String,
-                                email: fields['Email']!.value as String,
-                                phoneNumber: (fields['Phone Number']!.value ?? '') as String,
-                                city: fields['City']!.value as String);
+                                email: (fields['Email']!.value ?? '') as String,
+                                phoneNumber: fields['Phone Number']!.value as String,
+                                city: city);
                             if (widget.attendee != null) {
                               update(attendee);
                             } else {
@@ -257,10 +323,10 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                                               icon: const Icon(Icons.delete),
                                               label: const Text("Delete"),
                                               style: FORM_BUTTON_STYLE,
-                                              onPressed: widget.attendee?.email != null && widget.attendee!.email.isNotEmpty
+                                              onPressed: widget.attendee?.phoneNumber != null && widget.attendee!.phoneNumber.isNotEmpty
                                                   ? () async {
                                                       try {
-                                                        await CLIENT.from('attendee').delete().match({'email': widget.attendee!.email}).whenComplete(() {
+                                                        await CLIENT.from('attendee').delete().match({'phoneNumber': widget.attendee!.phoneNumber}).whenComplete(() {
                                                           Navigator.pop(context);
                                                           Navigator.pop(context);
                                                         });

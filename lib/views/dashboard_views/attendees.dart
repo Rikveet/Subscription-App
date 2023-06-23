@@ -35,18 +35,22 @@ class AttendeeListTableState extends State<AttendeeListTable> {
               return Loading(300, 300, 'loading_cloud_data');
             }
             final attendeeList = snapshot.data!;
-            final registeredEmails = attendeeList.map((e) => e['email'] as String).toList();
+
+            final registeredPhoneNumbers = attendeeList.map((e) {
+             return (e['phoneNumber'] as int).toString();
+            }).toList();
 
             List<Map<String, dynamic>>? filteredList;
 
             if (searchFilter != null && searchFilter!.isNotEmpty) {
               // generate filtered list
+              final _searchFilter = (searchFilter as String).toLowerCase().replaceAll('-', '');
               filteredList = attendeeList
-                  .where((user) => ((user['firstName'] as String).toLowerCase().contains(searchFilter as String) ||
-                      (user['lastName'] as String).toLowerCase().contains(searchFilter as String) ||
-                      (user['email'] as String).toLowerCase().contains(searchFilter as String) ||
-                      (user['phoneNumber'] ?? '').toString().toLowerCase().contains(searchFilter as String) ||
-                      (user['city'] as String).toLowerCase().contains(searchFilter as String)))
+                  .where((user) => ((user['firstName'] as String).toLowerCase().contains(_searchFilter) ||
+                      (user['lastName'] as String).toLowerCase().contains(_searchFilter) ||
+                      (user['email'] ?? '').toLowerCase().contains(_searchFilter) ||
+                      (user['phoneNumber']).toString().toLowerCase().contains(_searchFilter) ||
+                      (user['city'] as String).toLowerCase().contains(_searchFilter)))
                   .toList();
             }
             return Stack(children: [
@@ -65,7 +69,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                     ],
                     source: AttendeeList(
                         data: filteredList != null && filteredList.isNotEmpty ? filteredList : attendeeList,
-                        registeredEmails: registeredEmails,
+                        registeredEmails: registeredPhoneNumbers,
                         isEditable: widget.isClientEditor,
                         context: context),
                   ),
@@ -120,7 +124,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                           showDialog(
                             context: context,
                             builder: (context) {
-                              return AddAttendeeForm(registeredEmails: registeredEmails);
+                              return AddAttendeeForm(registeredPhoneNumbers: registeredPhoneNumbers);
                             },
                           );
                         },
