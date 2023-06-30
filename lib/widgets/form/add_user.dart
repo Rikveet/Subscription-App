@@ -61,7 +61,7 @@ class AddUserFormState extends State<AddUserForm> {
 
   Future<void> submit(AuthorizedUser user) async {
     try {
-      await Supabase.instance.client.from('authorized_user').insert({'name': user.name, 'email': user.email, 'permissions': user.permissions});
+      await Supabase.instance.client.from('authorized_user').insert({'name':generateName(user.name), 'email': user.email.trim().toLowerCase(), 'permissions': user.permissions});
       reset();
     } on PostgrestException catch (error) {
       if (error.details == 'Forbidden') {

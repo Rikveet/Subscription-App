@@ -55,15 +55,14 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
 
   bool fieldsNotUpdated() {
     final fields = formKey.currentState!.fields;
-    return fields['First Name']?.value == widget.attendee?.firstName &&
-        fields['Last Name']?.value == widget.attendee?.lastName &&
+    return fields['Name']?.value == widget.attendee?.name &&
         fields['Email']?.value == widget.attendee?.email &&
         fields['Phone Number']?.value == widget.attendee?.phoneNumber &&
         city == widget.attendee?.city;
   }
 
   Map<String, dynamic> getUploadableAttendee(Attendee attendee) {
-    final Map<String, dynamic> attendeeInfo = {'firstName': attendee.firstName, 'lastName': attendee.lastName, 'email': attendee.email, 'city': attendee.city};
+    final Map<String, dynamic> attendeeInfo = {'name': generateName(attendee.name), 'email': attendee.email.trim().toLowerCase(), 'city': attendee.city};
     if (attendee.phoneNumber.isNotEmpty) {
       attendeeInfo['phoneNumber'] = int.parse(attendee.phoneNumber);
     }
@@ -124,15 +123,14 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
               isResettable = false;
               return;
             }
-            bool firstName = isFieldEmpty(fields['First Name']?.value);
-            bool lastName = isFieldEmpty(fields['Last Name']?.value);
+            bool name = isFieldEmpty(fields['Name']?.value);
             bool email = isFieldEmpty(fields['Email']?.value);
             bool phoneNumber = isFieldEmpty(fields['Phone Number']?.value);
             bool _city = isFieldEmpty(city);
             // resettable if any of the fields are filled
-            isResettable = firstName || lastName || email || phoneNumber || _city;
+            isResettable = name || email || phoneNumber || _city;
             // all required fields are filled
-            isSubmittable = firstName && lastName && phoneNumber && _city;
+            isSubmittable = name && phoneNumber && _city;
           });
         },
         child: Container(
@@ -145,25 +143,9 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
               InputRow(
                 children: [
                   InputField(
-                    labelText: 'First Name',
+                    labelText: 'Name',
                     autoFocus: true,
-                    initialValue: widget.attendee?.firstName,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Required*";
-                      }
-                      if (value.length < 3) {
-                        return 'Too short, must be more than 3 letters';
-                      }
-                      if (!isText(value)) {
-                        return 'Only alphabets are allowed';
-                      }
-                      return null;
-                    },
-                  ),
-                  InputField(
-                    labelText: 'Last Name',
-                    initialValue: widget.attendee?.lastName,
+                    initialValue: widget.attendee?.name,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Required*";
@@ -203,10 +185,6 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                     }
                     if (!isPhoneNumber(value)) {
                       return "Not a phone number";
-                    }
-                    if (widget.registeredPhoneNumbers.contains(value) && value.compareTo(widget.attendee?.phoneNumber ?? '') != 0) {
-                      // User entered an email that is already registered and not their email.
-                      return "Already in use";
                     }
                     return null;
                   },
@@ -258,11 +236,57 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                           if (formKey.currentState!.validate()) {
                             final fields = formKey.currentState!.fields;
                             final attendee = Attendee(
-                                firstName: fields['First Name']!.value as String,
-                                lastName: fields['Last Name']!.value as String,
+                                name: fields['Name']!.value as String,
                                 email: (fields['Email']!.value ?? '') as String,
                                 phoneNumber: fields['Phone Number']!.value as String,
                                 city: city);
+                            if (widget.registeredPhoneNumbers.contains(attendee.phoneNumber) && attendee.phoneNumber.compareTo(widget.attendee?.phoneNumber ?? '') != 0) {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return (AlertDialog(
+                                      title: const Text('Warning!'),
+                                      content: Column(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('The following number is already in use!'),
+                                          FORM_VERTICAL_GAP,
+                                          Text('Phone Number: ${attendee.phoneNumber ?? "Not found"}'),
+                                          FORM_VERTICAL_GAP,
+                                          Row(
+                                            children: [
+                                              ElevatedButton.icon(
+                                                  icon: const Icon(Icons.person_add),
+                                                  label: const Text("Add"),
+                                                  style: FORM_BUTTON_STYLE,
+                                                  onPressed: () async {
+                                                    if (widget.attendee != null) {
+                                                      await update(attendee);
+                                                    } else {
+                                                      await submit(attendee);
+                                                    }
+                                                    Navigator.pop(context);
+                                                  }),
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              ElevatedButton.icon(
+                                                  icon: const Icon(Icons.cancel),
+                                                  style: FORM_BUTTON_STYLE,
+                                                  label: const Text("Cancel"),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  })
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ));
+                                  });
+                              return;
+                            }
                             if (widget.attendee != null) {
                               update(attendee);
                             } else {
@@ -309,9 +333,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                                     children: [
                                       const Text('You are about to delete:'),
                                       FORM_VERTICAL_GAP,
-                                      Text('First Name: ${widget.attendee?.firstName ?? "Not found"}'),
-                                      FORM_VERTICAL_GAP,
-                                      Text('Last Name: ${widget.attendee?.firstName ?? "Not found"}'),
+                                      Text('Name: ${widget.attendee?.name ?? "Not found"}'),
                                       FORM_VERTICAL_GAP,
                                       Text('Email: ${widget.attendee?.email ?? "Not found"}'),
                                       FORM_VERTICAL_GAP,
@@ -328,7 +350,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                                               onPressed: widget.attendee?.phoneNumber != null && widget.attendee!.phoneNumber.isNotEmpty
                                                   ? () async {
                                                       try {
-                                                        await CLIENT.from('attendee').delete().match({'phoneNumber': widget.attendee!.phoneNumber}).whenComplete(() {
+                                                        await CLIENT.from('attendee').delete().match({'id': widget.attendee!.id}).whenComplete(() {
                                                           Navigator.pop(context);
                                                           Navigator.pop(context);
                                                         });

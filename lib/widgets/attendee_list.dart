@@ -23,22 +23,21 @@ class AttendeeList extends DataTableSource {
             ? () {
                 showDialog(
                     builder: (context) {
-                      final firstName = data[index]['firstName'] as String;
-                      final lastName = data[index]['lastName'] as String;
+                      final id = data[index]['id'] as int;
+                      final name = data[index]['name'] as String;
                       final email = (data[index]['email'] ?? '') as String;
                       final phoneNumber = data[index]['phoneNumber'].toString();
                       final city = data[index]['city'];
                       return AddAttendeeForm(
                         registeredPhoneNumbers: registeredEmails,
-                        attendee: Attendee(firstName: firstName, lastName: lastName, email: email, phoneNumber: phoneNumber, city: city),
+                        attendee: Attendee(id: id, name: name, email: email, phoneNumber: phoneNumber, city: city),
                       );
                     },
                     context: context as BuildContext);
               }
             : null,
         cells: [
-          DataCell(Text(data[index]['firstName'])),
-          DataCell(Text(data[index]['lastName'])),
+          DataCell(Text(data[index]['name'])),
           DataCell(Text(data[index]['email'] ?? '')),
           DataCell((Text(formattedPhoneNumber))),
           DataCell(Text(data[index]['city'])),

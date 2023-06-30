@@ -45,13 +45,14 @@ class AttendeeListTableState extends State<AttendeeListTable> {
               return (e['phoneNumber'] as int).toString();
             }).toList();
 
+            attendeeList.sort((dynamic a, dynamic b) => (a['name'] as String).compareTo(b['name'] as String));
+
             List<Map<String, dynamic>>? filteredList = attendeeList;
 
             if (searchFilter.isNotEmpty) {
               // generate filtered list
               filteredList = attendeeList
-                  .where((user) => ((user['firstName'] as String).toLowerCase().contains(searchFilter) ||
-                      (user['lastName'] as String).toLowerCase().contains(searchFilter) ||
+                  .where((user) => ((user['name'] as String).toLowerCase().contains(searchFilter) ||
                       (user['email'] ?? '').toLowerCase().contains(searchFilter) ||
                       (user['phoneNumber']).toString().toLowerCase().contains(searchFilter) ||
                       (user['city'] as String).toLowerCase().contains(searchFilter)))
@@ -65,8 +66,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                     header: const Text('Attendee List'),
                     rowsPerPage: 6,
                     columns: const [
-                      DataColumn(label: Text('First Name')),
-                      DataColumn(label: Text('Last Name')),
+                      DataColumn(label: Text('Name')),
                       DataColumn(label: Text('Email')),
                       DataColumn(label: Text('Phone Number')),
                       DataColumn(label: Text('City')),
@@ -178,8 +178,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
 
                                   List<List<String>> data = [
                                         [
-                                          'First Name',
-                                          'Last Name',
+                                          'Name',
                                           'Email',
                                           'Phone Number',
                                           'City',
@@ -187,8 +186,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                                       ] +
                                       attendeeList
                                           .map((user) => [
-                                                user['firstName'] as String,
-                                                user['lastName'] as String,
+                                                user['name'] as String,
                                                 (user['email'] ?? '') as String,
                                                 user['phoneNumber'].toString(),
                                                 user['city'] as String,

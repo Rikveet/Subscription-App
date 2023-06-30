@@ -84,3 +84,6 @@ bool isPhoneNumber(String value){
   return RegExp(r"^[0-9]{10}$").hasMatch(value);
 }
 
+String generateName(String name){
+  return name.trim().split(' ').map((val) => '${val[0].toUpperCase()}${val.substring(1).toLowerCase()}').toList().join(' ');
+}

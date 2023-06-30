@@ -1,9 +1,9 @@
 class Attendee {
-  String firstName;
-  String lastName;
+  int? id;
+  String name;
   String email;
   String phoneNumber;
   String city;
 
-  Attendee({required this.firstName, required this.lastName, required this.email, this.phoneNumber = '', required this.city});
+  Attendee({this.id = -1, required this.name, required this.email, this.phoneNumber = '', required this.city});
 }
