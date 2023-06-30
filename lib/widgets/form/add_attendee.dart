@@ -90,7 +90,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
 
   Future<void> update(Attendee attendee) async {
     try {
-      await Supabase.instance.client.from('attendee').update(getUploadableAttendee(attendee)).match({'phoneNumber': widget.attendee!.phoneNumber}).whenComplete(() {
+      await Supabase.instance.client.from('attendee').update(getUploadableAttendee(attendee)).match({'id': widget.attendee!.id}).whenComplete(() {
         reset();
         Navigator.of(context).pop();
       });
