@@ -73,10 +73,10 @@ class Nav extends StatelessWidget {
           icon: Icons.list,
           label: 'Attendees',
         ),
-        // const SidebarXItem(
-        //   icon: Icons.favorite,
-        //   label: 'Reminders',
-        // ),
+        const SidebarXItem(
+          icon: Icons.calendar_month,
+          label: 'Attendance',
+        ),
         // const SidebarXItem(
         //   icon: Icons.settings,
         //   label: 'Settings',

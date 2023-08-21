@@ -1,50 +1,64 @@
-import 'dart:io';
-import 'package:csv/csv.dart';
-import 'package:filesystem_picker/filesystem_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:radha_swami_management_system/constants.dart';
-import 'package:radha_swami_management_system/widgets/data_table_paginated.dart';
-import 'package:radha_swami_management_system/widgets/form/add_attendee.dart';
+import 'package:radha_swami_management_system/models/attendanceRecord.dart';
+import 'package:radha_swami_management_system/models/attendees.dart';
+import 'package:radha_swami_management_system/widgets/attendance_list.dart';
 import 'package:radha_swami_management_system/widgets/attendee_list.dart';
+import 'package:radha_swami_management_system/widgets/data_table_paginated.dart';
 import 'package:radha_swami_management_system/widgets/form/core/input_field.dart';
 
-class AttendeeListTable extends StatefulWidget {
+class AttendanceTable extends StatefulWidget {
   final bool isClientEditor; // does the logged in client have editor permission
   final List<Map<String, dynamic>> attendees;
 
-  const AttendeeListTable({super.key, required this.isClientEditor, required this.attendees});
+  const AttendanceTable({super.key, required this.isClientEditor, required this.attendees});
 
   @override
-  AttendeeListTableState createState() {
-    return AttendeeListTableState();
+  AttendanceTableState createState() {
+    return AttendanceTableState();
   }
 }
 
-class AttendeeListTableState extends State<AttendeeListTable> {
-  // search
-  String searchFilter = '';
-  bool isExportingCsv = false;
+class AttendanceTableState extends State<AttendanceTable> {
   GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
+  List<dynamic> attendanceList = [];
+  String date = DateTime.timestamp().toIso8601String().substring(0, 10);
+  String searchFilter = '';
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      readAttendees();
+    } catch (_) {}
+  }
+
+  Future<void> readAttendees() async {
+    try {
+      CLIENT.from('attendance').select('*').eq('date', date).then((attendees) {
+        debugPrint(attendees.toString());
+        setState(() {
+          attendanceList = attendees;
+        });
+      });
+    } catch (_) {}
+  }
+
+  Future<void> addAttendee(AttendanceRecord record) async {
+    try {
+      await CLIENT.from('attendance').insert({'date': date, 'attendee_id': record.id});
+    } catch (_) {}
+  }
+
+  Future<void> removeAttendee(AttendanceRecord record) async {
+    try {
+      await CLIENT.from('attendance').delete();
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
-    final registeredPhoneNumbers = widget.attendees.map((e) {
-      return (e['phoneNumber'] as int).toString();
-    }).toList();
-
-    List<Map<String, dynamic>>? filteredList = widget.attendees;
-
-    if (searchFilter.isNotEmpty) {
-      // generate filtered list
-      filteredList = widget.attendees
-          .where((user) => ((user['name'] as String).toLowerCase().contains(searchFilter) ||
-              (user['email'] ?? '').toLowerCase().contains(searchFilter) ||
-              (user['phoneNumber']).toString().toLowerCase().contains(searchFilter) ||
-              (user['city'] as String).toLowerCase().contains(searchFilter)))
-          .toList();
-    }
     return (Stack(
       children: [
         Stack(children: [
@@ -55,7 +69,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                 header: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Attendee List'),
+                    const Text('Attendance'),
                     FormBuilder(
                       key: formKey,
                       onChanged: () {
@@ -100,7 +114,7 @@ class AttendeeListTableState extends State<AttendeeListTable> {
                   DataColumn(label: Text('City')),
                   DataColumn(label: Text('Email')),
                 ],
-                source: AttendeeList(data: filteredList, registeredEmails: registeredPhoneNumbers, isEditable: widget.isClientEditor, context: context),
+                source: AttendanceList(data: attendanceList, isEditable: widget.isClientEditor, context: context),
               ),
             ],
           ),

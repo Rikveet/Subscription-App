@@ -111,7 +111,78 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Register'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(widget.attendee != null ? 'Update' : 'Register'),
+          widget.attendee != null
+              ? IconButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return (AlertDialog(
+                            title: const Text('Are you sure?'),
+                            content: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('You are about to delete:'),
+                                FORM_VERTICAL_GAP,
+                                Text('Name: ${widget.attendee?.name ?? "Not found"}'),
+                                FORM_VERTICAL_GAP,
+                                Text('Email: ${widget.attendee?.email ?? "Not found"}'),
+                                FORM_VERTICAL_GAP,
+                                Text('Phone Number: ${widget.attendee?.phoneNumber ?? "Not found"}'),
+                                FORM_VERTICAL_GAP,
+                                Text('City: ${widget.attendee?.city ?? "Not found"}'),
+                                FORM_VERTICAL_GAP,
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                        icon: const Icon(Icons.delete),
+                                        label: const Text("Delete"),
+                                        style: FORM_BUTTON_STYLE,
+                                        onPressed: widget.attendee?.phoneNumber != null && widget.attendee!.phoneNumber.isNotEmpty
+                                            ? () async {
+                                                try {
+                                                  await CLIENT.from('attendee').delete().match({'id': widget.attendee!.id}).whenComplete(() {
+                                                    Navigator.pop(context);
+                                                    Navigator.pop(context);
+                                                  });
+                                                } on PostgrestException {
+                                                  ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change.'));
+                                                } catch (error) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
+                                                }
+                                              }
+                                            : null),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    ElevatedButton.icon(
+                                        icon: const Icon(Icons.cancel),
+                                        style: FORM_BUTTON_STYLE,
+                                        label: const Text("Cancel"),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        })
+                                  ],
+                                )
+                              ],
+                            ),
+                          ));
+                        });
+                  },
+                  icon: const Icon(Icons.delete_forever),
+                  color: ACTION_COLOR,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              : Container(),
+        ],
+      ),
       content: FormBuilder(
         key: formKey,
         onChanged: () {
@@ -197,7 +268,7 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                   return DropdownMenuItem(
                       value: city,
                       child: Row(
-                        children: <Widget>[Text(city)],
+                        children: <Widget>[SizedBox(height: 50, width: 200, child: Text(city))],
                       ));
                 }).toList(),
                 onChanged: (_city) {
@@ -317,70 +388,6 @@ class AddAttendeeFormState extends State<AddAttendeeForm> {
                   icon: Icon(widget.attendee != null ? Icons.refresh : Icons.clear),
                   label: Text(widget.attendee != null ? 'Reset' : 'Clear All'),
                 ),
-                widget.attendee != null
-                    ? IconButton(
-                        color: ACTION_COLOR,
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return (AlertDialog(
-                                  title: const Text('Are you sure?'),
-                                  content: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text('You are about to delete:'),
-                                      FORM_VERTICAL_GAP,
-                                      Text('Name: ${widget.attendee?.name ?? "Not found"}'),
-                                      FORM_VERTICAL_GAP,
-                                      Text('Email: ${widget.attendee?.email ?? "Not found"}'),
-                                      FORM_VERTICAL_GAP,
-                                      Text('Phone Number: ${widget.attendee?.phoneNumber ?? "Not found"}'),
-                                      FORM_VERTICAL_GAP,
-                                      Text('City: ${widget.attendee?.city ?? "Not found"}'),
-                                      FORM_VERTICAL_GAP,
-                                      Row(
-                                        children: [
-                                          ElevatedButton.icon(
-                                              icon: const Icon(Icons.delete),
-                                              label: const Text("Delete"),
-                                              style: FORM_BUTTON_STYLE,
-                                              onPressed: widget.attendee?.phoneNumber != null && widget.attendee!.phoneNumber.isNotEmpty
-                                                  ? () async {
-                                                      try {
-                                                        await CLIENT.from('attendee').delete().match({'id': widget.attendee!.id}).whenComplete(() {
-                                                          Navigator.pop(context);
-                                                          Navigator.pop(context);
-                                                        });
-                                                      } on PostgrestException {
-                                                        ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change.'));
-                                                      } catch (error) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
-                                                      }
-                                                    }
-                                                  : null),
-                                          const SizedBox(
-                                            width: 10,
-                                          ),
-                                          ElevatedButton.icon(
-                                              icon: const Icon(Icons.cancel),
-                                              style: FORM_BUTTON_STYLE,
-                                              label: const Text("Cancel"),
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              })
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                ));
-                              });
-                        },
-                        icon: const Icon(Icons.delete_forever),
-                      )
-                    : Container(),
               ]),
             ],
           ),

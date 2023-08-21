@@ -22,7 +22,7 @@ ButtonStyle FORM_BUTTON_STYLE = ButtonStyle(
   shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0))),
   textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 18, color: WHITE)),
   backgroundColor: MaterialStateProperty.all(ACTION_COLOR),
-  fixedSize: MaterialStateProperty.all(const Size(150, 50)),
+  fixedSize: MaterialStateProperty.all(const Size(135, 50)),
 );
 
 Text FormTitle(String text) {
@@ -63,9 +63,9 @@ String getTitleByIndex(int index) {
   switch (index) {
     // case 1:
     //   return 'Reminders';
-    // case 2:
-    //   return 'Settings';
     case 1:
+      return 'Attendance';
+    case 2:
       return 'Authorize Account';
     default:
       return 'Home';

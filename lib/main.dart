@@ -21,9 +21,10 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  await windowManager.ensureInitialized();
+
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
     WindowManager.instance.setMinimumSize(const Size(1000, 563));
     WindowManager.instance.setMaximumSize(const Size(1920, 1080));
     WindowManager.instance.setTitle('Radha Swami');

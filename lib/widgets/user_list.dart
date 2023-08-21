@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/models/user.dart';
 import 'package:radha_swami_management_system/widgets/form/add_user.dart';
 
@@ -13,7 +14,7 @@ class UserList extends DataTableSource {
   @override
   DataRow? getRow(int index) {
     return DataRow(
-      onLongPress: isEditable && context != null
+      onLongPress: isEditable && data[index]['email'] as String != CLIENT.auth.currentUser?.email && context != null
           ? () {
               showDialog(
                   builder: (context) {

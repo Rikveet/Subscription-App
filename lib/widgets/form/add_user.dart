@@ -61,7 +61,7 @@ class AddUserFormState extends State<AddUserForm> {
 
   Future<void> submit(AuthorizedUser user) async {
     try {
-      await Supabase.instance.client.from('authorized_user').insert({'name':generateName(user.name), 'email': user.email.trim().toLowerCase(), 'permissions': user.permissions});
+      await Supabase.instance.client.from('authorized_user').insert({'name': generateName(user.name), 'email': user.email.trim().toLowerCase(), 'permissions': user.permissions});
       reset();
     } on PostgrestException catch (error) {
       if (error.details == 'Forbidden') {
@@ -96,7 +96,74 @@ class AddUserFormState extends State<AddUserForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.user != null ? 'Update' : 'Authorize'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(widget.user != null ? 'Update' : 'Authorize'),
+          widget.user != null
+              ? IconButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return (AlertDialog(
+                            title: const Text('Are you sure?'),
+                            content: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('You are about to delete:'),
+                                FORM_VERTICAL_GAP,
+                                Text('Name: ${widget.user?.name ?? "Not found"}'),
+                                FORM_VERTICAL_GAP,
+                                Text('Email: ${widget.user?.email ?? "Not found"}'),
+                                FORM_VERTICAL_GAP,
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                        icon: const Icon(Icons.delete_forever),
+                                        label: const Text("Delete"),
+                                        style: FORM_BUTTON_STYLE,
+                                        onPressed: widget.user?.email != null && widget.user!.email.isNotEmpty
+                                            ? () async {
+                                                try {
+                                                  await CLIENT.from('authorized_user').delete().match({'email': widget.user?.email}).whenComplete(() {
+                                                    Navigator.pop(context);
+                                                    Navigator.pop(context);
+                                                  });
+                                                } on PostgrestException {
+                                                  ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change.'));
+                                                } catch (error) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
+                                                }
+                                              }
+                                            : null),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    ElevatedButton.icon(
+                                        icon: const Icon(Icons.cancel),
+                                        style: FORM_BUTTON_STYLE,
+                                        label: const Text("Cancel"),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        })
+                                  ],
+                                )
+                              ],
+                            ),
+                          ));
+                        });
+                  },
+                  icon: const Icon(Icons.delete),
+                  color: ACTION_COLOR,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              : Container(),
+        ],
+      ),
       content: FormBuilder(
         key: formKey,
         onChanged: () {
@@ -116,185 +183,127 @@ class AddUserFormState extends State<AddUserForm> {
             isSubmittable = name && email;
           });
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            InputField(
-              labelText: 'Name',
-              initialValue: widget.user?.name,
-              autoFocus: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Required*";
-                }
-                if (value.length < 3) {
-                  return 'Too short, must be more than 3 letters';
-                }
-                if (!isText(value)) {
-                  return 'Only alphabets are allowed';
-                }
-                return null;
-              },
-            ),
-            FORM_VERTICAL_GAP,
-            InputField(
-              labelText: 'Email',
-              initialValue: widget.user?.email,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Required*";
-                }
-                if (!isEmail(value)) {
-                  return "Not a valid email";
-                }
-                if (widget.registeredEmails.contains(value) && value.compareTo(widget.user?.email ?? '') != 0) {
-                  // User entered an email that is already registered and not their email.
-                  return "Email is already registered";
-                }
-                return null;
-              },
-            ),
-            FORM_VERTICAL_GAP,
-            InputRow(children: [
-              CheckboxInput(
-                  checkbox: Checkbox(
-                    value: isAdmin,
-                    onChanged: (value) {
-                      setState(() {
-                        isAdmin = value ?? false;
-                        isSubmittable = true;
-                        isResettable = true;
-                      });
-                    },
-                  ),
-                  label: 'Admin'),
-              CheckboxInput(
-                  checkbox: Checkbox(
-                    value: isEditor,
-                    onChanged: (value) {
-                      setState(() {
-                        isEditor = value ?? false;
-                        isSubmittable = true;
-                        isResettable = true;
-                      });
-                    },
-                  ),
-                  label: 'Editor'),
-            ]),
-            FORM_VERTICAL_GAP,
-            Row(children: [
-              ElevatedButton.icon(
-                onPressed: !isSubmittable || isSubmitting
-                    ? null
-                    : () async {
-                        if (formKey.currentState!.validate()) {
-                          final fields = formKey.currentState!.fields;
-                          List<String> permissions = [];
-                          if (isAdmin) {
-                            permissions.add('ADMIN');
-                          }
-                          if (isEditor) {
-                            permissions.add('EDITOR');
-                          }
-                          final name = fields['Name']!.value as String;
-                          final email = fields['Email']!.value as String;
-
-                          final user = AuthorizedUser(name: name, email: email, permissions: permissions);
-                          if (widget.user != null) {
-                            update(user);
-                          } else {
-                            submit(user);
-                          }
-                          setState(() {
-                            isSubmitting = true;
-                          });
-                        }
-                      },
-                style: FORM_BUTTON_STYLE,
-                icon: isSubmitting ? const Icon(Icons.sync) : Icon(widget.user != null ? Icons.cloud_upload : Icons.person_add),
-                label: isSubmitting ? const Text('Uploading') : Text(widget.user != null ? 'Edit' : 'Register'),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              ElevatedButton.icon(
-                onPressed: !isResettable
-                    ? null
-                    : () {
-                        reset();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Cleared')),
-                        );
-                      },
-                style: FORM_BUTTON_STYLE,
-                icon: Icon(widget.user != null ? Icons.refresh : Icons.clear),
-                label: Text(widget.user != null ? 'Reset' : 'Clear All'),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              widget.user != null?
-              IconButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return (AlertDialog(
-                          title: const Text('Are you sure?'),
-                          content: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('You are about to delete:'),
-                              FORM_VERTICAL_GAP,
-                              Text('Name: ${widget.user?.name ?? "Not found"}'),
-                              FORM_VERTICAL_GAP,
-                              Text('Email: ${widget.user?.email ?? "Not found"}'),
-                              FORM_VERTICAL_GAP,
-                              Row(
-                                children: [
-                                  ElevatedButton.icon(
-                                      icon: const Icon(Icons.delete_forever),
-                                      label: const Text("Delete"),
-                                      style: FORM_BUTTON_STYLE,
-                                      onPressed: widget.user?.email != null && widget.user!.email.isNotEmpty
-                                          ? () async {
-                                              try {
-                                                await CLIENT.from('authorized_user').delete().match({'email': widget.user?.email}).whenComplete(() {
-                                                  Navigator.pop(context);
-                                                  Navigator.pop(context);
-                                                });
-                                              } on PostgrestException {
-                                                ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('You are not allowed to make this change.'));
-                                              } catch (error) {
-                                                ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Unexpected error occurred. Please contact the admin.'));
-                                              }
-                                            }
-                                          : null),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  ElevatedButton.icon(
-                                      icon: const Icon(Icons.cancel),
-                                      style: FORM_BUTTON_STYLE,
-                                      label: const Text("Cancel"),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      })
-                                ],
-                              )
-                            ],
-                          ),
-                        ));
-                      });
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500),
+          width: 350,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InputField(
+                labelText: 'Name',
+                initialValue: widget.user?.name,
+                autoFocus: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Required*";
+                  }
+                  if (value.length < 3) {
+                    return 'Too short, must be more than 3 letters';
+                  }
+                  if (!isText(value)) {
+                    return 'Only alphabets are allowed';
+                  }
+                  return null;
                 },
-                icon: const Icon(Icons.delete),
-                color: ACTION_COLOR,
-              ): Container(),
-            ]),
-          ],
+              ),
+              FORM_VERTICAL_GAP,
+              InputField(
+                labelText: 'Email',
+                initialValue: widget.user?.email,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Required*";
+                  }
+                  if (!isEmail(value)) {
+                    return "Not a valid email";
+                  }
+                  if (widget.registeredEmails.contains(value) && value.compareTo(widget.user?.email ?? '') != 0) {
+                    // User entered an email that is already registered and not their email.
+                    return "Email is already registered";
+                  }
+                  return null;
+                },
+              ),
+              FORM_VERTICAL_GAP,
+              InputRow(children: [
+                CheckboxInput(
+                    checkbox: Checkbox(
+                      value: isAdmin,
+                      onChanged: (value) {
+                        setState(() {
+                          isAdmin = value ?? false;
+                          isSubmittable = true;
+                          isResettable = true;
+                        });
+                      },
+                    ),
+                    label: 'Admin'),
+                CheckboxInput(
+                    checkbox: Checkbox(
+                      value: isEditor,
+                      onChanged: (value) {
+                        setState(() {
+                          isEditor = value ?? false;
+                          isSubmittable = true;
+                          isResettable = true;
+                        });
+                      },
+                    ),
+                    label: 'Editor'),
+              ]),
+              FORM_VERTICAL_GAP,
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                ElevatedButton.icon(
+                  onPressed: !isSubmittable || isSubmitting
+                      ? null
+                      : () async {
+                          if (formKey.currentState!.validate()) {
+                            final fields = formKey.currentState!.fields;
+                            List<String> permissions = [];
+                            if (isAdmin) {
+                              permissions.add('ADMIN');
+                            }
+                            if (isEditor) {
+                              permissions.add('EDITOR');
+                            }
+                            final name = fields['Name']!.value as String;
+                            final email = fields['Email']!.value as String;
+
+                            final user = AuthorizedUser(name: name, email: email, permissions: permissions);
+                            if (widget.user != null) {
+                              update(user);
+                            } else {
+                              submit(user);
+                            }
+                            setState(() {
+                              isSubmitting = true;
+                            });
+                          }
+                        },
+                  style: FORM_BUTTON_STYLE,
+                  icon: isSubmitting ? const Icon(Icons.sync) : Icon(widget.user != null ? Icons.cloud_upload : Icons.person_add),
+                  label: isSubmitting ? const Text('Uploading') : Text(widget.user != null ? 'Edit' : 'Register'),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                ElevatedButton.icon(
+                  onPressed: !isResettable
+                      ? null
+                      : () {
+                          reset();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Cleared')),
+                          );
+                        },
+                  style: FORM_BUTTON_STYLE,
+                  icon: Icon(widget.user != null ? Icons.refresh : Icons.clear),
+                  label: Text(widget.user != null ? 'Reset' : 'Clear All'),
+                )
+              ]),
+            ],
+          ),
         ),
       ),
     );
