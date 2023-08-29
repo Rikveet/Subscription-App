@@ -6,6 +6,7 @@ import 'package:radha_swami_management_system/models/attendees.dart';
 import 'package:radha_swami_management_system/widgets/attendance_list.dart';
 import 'package:radha_swami_management_system/widgets/attendee_list.dart';
 import 'package:radha_swami_management_system/widgets/data_table_paginated.dart';
+import 'package:radha_swami_management_system/widgets/form/add_attendee.dart';
 import 'package:radha_swami_management_system/widgets/form/core/input_field.dart';
 
 class AttendanceTable extends StatefulWidget {
@@ -37,9 +38,16 @@ class AttendanceTableState extends State<AttendanceTable> {
   Future<void> readAttendees() async {
     try {
       CLIENT.from('attendance').select('*').eq('date', date).then((attendees) {
-        debugPrint(attendees.toString());
         setState(() {
-          attendanceList = attendees;
+          attendanceList = (attendees as List<dynamic>).map((attendee) => {
+            ...(attendee as Map<String, dynamic>),
+            ...(
+                widget.attendees.where((_attendee) =>
+                _attendee['id'] == attendee['attendee_id']
+                ).single
+            )
+          }).toList();
+          debugPrint(attendanceList.toString());
         });
       });
     } catch (_) {}
@@ -56,6 +64,8 @@ class AttendanceTableState extends State<AttendanceTable> {
       await CLIENT.from('attendance').delete();
     } catch (_) {}
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -128,94 +138,14 @@ class AttendanceTableState extends State<AttendanceTable> {
                       showDialog(
                         context: context,
                         builder: (context) {
-                          return AddAttendeeForm(registeredPhoneNumbers: registeredPhoneNumbers);
+                          return Container();
                         },
                       );
                     },
                     child: const Icon(Icons.person_add),
                   ),
                 )
-              : Container(),
-          widget.isClientEditor
-              ? Positioned(
-                  right: 75,
-                  bottom: 10,
-                  child: FloatingActionButton(
-                    backgroundColor: ACTION_COLOR,
-                    onPressed: !isExportingCsv
-                        ? () async {
-                            setState(() {
-                              isExportingCsv = true;
-                            });
-                            try {
-                              final rootDirectory = await getApplicationDocumentsDirectory();
-                              // ignore: use_build_context_synchronously
-                              String? directory = await FilesystemPicker.openDialog(
-                                context: context,
-                                rootDirectory: rootDirectory,
-                                fsType: FilesystemType.folder,
-                                rootName: 'Documents',
-                                title: 'Select your save folder',
-                                theme: FilesystemPickerTheme(
-                                  topBar: FilesystemPickerTopBarThemeData(
-                                      backgroundColor: DASHBOARD_MENU_BACKGROUND_COLOR,
-                                      titleTextStyle: const TextStyle(
-                                        color: Colors.white,
-                                      )),
-                                ),
-                              );
-
-                              if (directory == null) {
-                                // ignore: use_build_context_synchronously
-                                ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Directory was not selected.'));
-                                setState(() {
-                                  isExportingCsv = false;
-                                });
-                                return;
-                              }
-
-                              String path = '$directory\\Attendee List ${DateTime.now().toString().replaceAll(':', '-').split('.')[0]}.csv';
-                              // ignore: use_build_context_synchronously
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Saving attendee list to $path')),
-                              );
-
-                              List<List<String>> data = [
-                                    [
-                                      'Name',
-                                      'Email',
-                                      'Phone Number',
-                                      'City',
-                                    ]
-                                  ] +
-                                  widget.attendees
-                                      .map((user) => [
-                                            user['name'] as String,
-                                            (user['email'] ?? '') as String,
-                                            user['phoneNumber'].toString(),
-                                            user['city'] as String,
-                                          ])
-                                      .toList();
-                              String csvData = const ListToCsvConverter().convert(data);
-
-                              final File file = await File(path).create(recursive: true);
-                              await file.writeAsString(csvData);
-
-                              // ignore: use_build_context_synchronously
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Attendee list exported')),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(ErrorSnackBar('Access denied. Please close the file or select another directory.'));
-                            }
-                            setState(() {
-                              isExportingCsv = false;
-                            });
-                          }
-                        : null,
-                    child: const Icon(Icons.download_rounded),
-                  ))
-              : Container(),
+              : Container()
         ]),
       ],
     ));

@@ -18,6 +18,8 @@ class AttendanceList extends DataTableSource {
         ? '${rawPhoneNumber.substring(0, 3)}-${rawPhoneNumber.substring(3, 6)}-${rawPhoneNumber.substring(6)}'
         : rawPhoneNumber;
 
+    debugPrint('data[index]: ${data[index].toString()}');
+
     return DataRow(
         onLongPress: isEditable && context != null
             ? () {
@@ -28,7 +30,8 @@ class AttendanceList extends DataTableSource {
                 final email = (data[index]['email'] ?? '') as String;
                 final phoneNumber = data[index]['phoneNumber'].toString();
                 final city = data[index]['city'];
-                return AddAttendanceForm(attendees: attendees, currentAttendees: currentAttendees);
+                return Container();
+                //AddAttendanceForm(attendees: attendees, currentAttendees: currentAttendees);
               },
               context: context as BuildContext);
         }

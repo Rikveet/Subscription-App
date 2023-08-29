@@ -34,10 +34,17 @@ class AddAttendanceFormState extends State<AddAttendanceForm> {
     });
   }
 
+  /*
+  * Checks if the attendee is already in the list
+  * Primary used to filter out the the attendees from the selection list that are already attending*/
   bool isAttending(String id) {
     return widget.currentAttendees.where((attendee) => attendee['attendee_id'] == id).isNotEmpty;
   }
 
+  /*
+  * Requests the db to add the list of attendees to the attendance.
+  * Bulk update instead but allows allows single updates
+  * */
   Future<void> addAttendees() async {
     try {
       await Supabase.instance.client.from('attendance').insert(attendees);
@@ -55,6 +62,8 @@ class AddAttendanceFormState extends State<AddAttendanceForm> {
     }
   }
 
+  /*
+  * Render function*/
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -141,7 +150,13 @@ class AddAttendanceFormState extends State<AddAttendanceForm> {
                   onPressed: !isSubmittable || isSubmitting
                       ? null
                       : () async {
-
+                          setState(() {
+                            isSubmitting = true;
+                          });
+                          await addAttendees();
+                          setState(() {
+                            isSubmitting = false;
+                          });
                         },
                   style: FORM_BUTTON_STYLE,
                   icon: isSubmitting ? const Icon(Icons.sync) :  const Icon(Icons.person_add),

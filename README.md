@@ -19,10 +19,11 @@ A flutter project to help manage attendees/subscribers for your service.
 ## TODO
 - [ ] Implement change password functionality.
 - [ ] Implement password reset functionality.
-- [ ] Create Row level security for field validation on **INSERT** to ***attendee*** and ***authorized_user***.
+- [x] Create Row level security for field validation on **INSERT** to ***attendee*** and ***authorized_user***.
 - [x] Complete field validation for inputs in the flutter app.
-- [ ] Implement sorting functionality for attendees and authorized users table view.
+- [x] Implement sorting functionality for attendees and authorized users table view.
 - [ ] Implement ***reminders*** db to allow editors to generate reminders using attendee emails.
+- [ ] Implement ***attendance*** db to allow editors to manage attendees by date visited.
 - [x] Implement export to csv for attendees table.
 - [ ] Implement google api to update google sheets upon **INSERT** to ***attendee*** db.
 
