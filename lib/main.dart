@@ -2,6 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:radha_swami_management_system/redux/app_state.dart';
+import 'package:radha_swami_management_system/redux/models.dart';
+import 'package:radha_swami_management_system/redux/reducers.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:radha_swami_management_system/constants.dart';
 import 'package:radha_swami_management_system/views/login.dart';
@@ -21,8 +26,6 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-
-
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();
     WindowManager.instance.setMinimumSize(const Size(1000, 563));
@@ -30,7 +33,21 @@ void main() async {
     WindowManager.instance.setTitle('Radha Swami');
   }
 
-  runApp(const App()); // launch app
+  final store = Store<AppState>(
+      // create store
+      combineReducers<AppState>([
+        // combine reducers
+        authorizedUsersReducer,
+        attendeesReducer,
+        userReducer,
+      ]),
+      initialState: AppState(
+          attendeeStore: AttendeeListStore(list: []),
+          authorizedUserStore: AuthorizedUserListStore(list: []),
+          attendanceRecords: [],
+          userStore: UserStore()));
+
+  runApp(StoreProvider(store: store, child: const App())); // launch app
 }
 
 class App extends StatelessWidget {
@@ -44,9 +61,12 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
-        '/login': (context) => WillPopScope(onWillPop: () async => false, child: const Login()), // block routes being changed form system request
-        '/register': (context) => WillPopScope(onWillPop: () async => false, child: const Register()),
-        '/home': (context) => WillPopScope(onWillPop: () async => false, child: const Dashboard()),
+        '/login': (context) =>
+            WillPopScope(onWillPop: () async => false, child: const Login()),
+        '/register': (context) =>
+            WillPopScope(onWillPop: () async => false, child: const Register()),
+        '/home': (context) => WillPopScope(
+            onWillPop: () async => false, child: const Dashboard()),
       },
       theme: ThemeData(
         primaryColor: ACTION_COLOR,

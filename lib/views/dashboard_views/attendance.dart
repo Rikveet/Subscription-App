@@ -31,37 +31,7 @@ class AttendanceTableState extends State<AttendanceTable> {
   void initState() {
     super.initState();
     try {
-      readAttendees();
-    } catch (_) {}
-  }
-
-  Future<void> readAttendees() async {
-    try {
-      CLIENT.from('attendance').select('*').eq('date', date).then((attendees) {
-        setState(() {
-          attendanceList = (attendees as List<dynamic>).map((attendee) => {
-            ...(attendee as Map<String, dynamic>),
-            ...(
-                widget.attendees.where((_attendee) =>
-                _attendee['id'] == attendee['attendee_id']
-                ).single
-            )
-          }).toList();
-          debugPrint(attendanceList.toString());
-        });
-      });
-    } catch (_) {}
-  }
-
-  Future<void> addAttendee(AttendanceRecord record) async {
-    try {
-      await CLIENT.from('attendance').insert({'date': date, 'attendee_id': record.id});
-    } catch (_) {}
-  }
-
-  Future<void> removeAttendee(AttendanceRecord record) async {
-    try {
-      await CLIENT.from('attendance').delete();
+      // getAttendance();
     } catch (_) {}
   }
 

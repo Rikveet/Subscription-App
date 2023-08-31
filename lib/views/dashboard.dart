@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:radha_swami_management_system/models/attendanceRecord.dart';
-import 'package:radha_swami_management_system/models/attendees.dart';
-import 'package:radha_swami_management_system/models/user.dart';
 import 'package:radha_swami_management_system/views/dashboard_views/attendance.dart';
 import 'package:radha_swami_management_system/views/dashboard_views/attendees.dart';
 import 'package:radha_swami_management_system/views/dashboard_views/authorized_users.dart';
@@ -25,57 +22,20 @@ class DashboardState extends State<Dashboard> {
 
   bool loading = true;
 
-  final String? clientEmail = CLIENT.auth.currentUser?.email;
-  bool isClientAdmin = false;
-  bool isClientEditor = false;
-
-  List<Map<String, dynamic>> attendees = [];
-  List<Map<String, dynamic>> authorizedUsers = [];
-  List<Map<String, dynamic>> attendanceRecords = [];
-
   @override
   void initState() {
-    CLIENT.from('authorized_user').stream(primaryKey: ['id']).order('name', ascending: true).listen((List<Map<String, dynamic>> data) {
-          // subscribe to the authorized users table
-          setState(() {
-            authorizedUsers = data;
-            final Map<String, dynamic>? userRow = clientEmail != null
-                ? authorizedUsers.firstWhere((user) => user['email'] == clientEmail, orElse: () {
-                    return {};
-                  })
-                : null;
-            if (userRow != null && userRow.isNotEmpty && authorizedUsers.isNotEmpty) {
-              final permissions = (userRow['permissions'] as List<dynamic>).map((e) => e as String);
-              isClientAdmin = permissions.contains("ADMIN");
-              isClientEditor = permissions.contains("EDITOR");
-            }
-          });
-        });
+    super.initState();
+  }
 
-    CLIENT.from('attendee').stream(primaryKey: ['id']).order('name', ascending: true).listen((List<Map<String, dynamic>> data) {
-          // subscribe to the attendee table
-          setState(() {
-            attendees = data;
-          });
-        });
-
-    CLIENT.from('attendance').stream(primaryKey: ['id']).listen((List<Map<String, dynamic>> data) {
-      // subscribe to the attendance table
-      setState(() {
-        attendanceRecords = data;
-      });
-    });
+  @override
+  Widget build(BuildContext context) {
+    // dispatch actions to listen to the supabase changes to the attendee and authorized user tables
 
     setState(() {
       // all table have been subscribed to
       loading = false;
     });
 
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Builder(builder: (context) {
       final isSmallScreen = MediaQuery.of(context).size.width < 600;
       return Scaffold(
@@ -109,11 +69,11 @@ class DashboardState extends State<Dashboard> {
                     // case 2:
                     //   return Container(); // Settings
                     case 1:
-                      return AttendanceTable(isClientEditor: isClientEditor, attendees: attendees);
+                      return AttendanceTable();
                     case 2:
-                      return AuthorizedUsersTable(isClientAdmin: isClientAdmin, users: authorizedUsers);
+                      return AuthorizedUsersTable();
                     default: // case 0 and any other case that only uses onTap functionality
-                      return AttendeeListTable(isClientEditor: isClientEditor, attendees: attendees);
+                      return const AttendeeListTable();
                   }
                 },
               ),
